@@ -4,7 +4,7 @@ An interactive, 11-slide **Hebrew (RTL)** presentation about learning electric g
 
 It uses HTML/CSS/vanilla JS, **Three.js** for a 3D guitar inspired by Jimmy Page's Les Paul "Number One", and **Python** for a data engine that generates all the music-theory data shown on the interactive fretboard.
 
-> **Status: iteration 005 (distribution: GitHub Pages, standalone HTML, Windows launcher).** Earlier: iteration 004 (practice planner and cross-slide coherence). The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
+> **Status: iteration 006 (release-readiness review).** Earlier: 005 (distribution: GitHub Pages, standalone HTML, Windows launcher) and 004 (practice planner and cross-slide coherence). The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
 
 ![Opening slide](docs/screenshots/slide-01.png)
 
@@ -165,6 +165,7 @@ The output is a **practical starting point, not a scientifically optimised progr
 `python/guitarlab/` generates every note, interval, scale spelling and position that the fretboard displays. It also generates the equal-temperament fret positions that space the 2D fretboard to scale and place the frets on the 3D model.
 
 ```bash
+# requires Python 3.11+ (the launcher alone only needs 3.8+)
 cd python
 python -m venv ../.venv && ../.venv/Scripts/activate      # macOS/Linux: source ../.venv/bin/activate
 pip install pytest
@@ -193,7 +194,7 @@ python -m pytest                     # 27 tests
 ## Browser smoke test (optional)
 
 ```bash
-npm install                 # puppeteer-core only; it drives your installed Chrome/Edge
+npm install                 # dev tooling: esbuild (build) + puppeteer-core (drives your installed Chrome/Edge)
 npm run test:unit           # 14 planner logic tests (node:test, no dependencies)
 npm run test:browser        # 57 checks against the source (served)
 npm run test:standalone     # same checks + 'no network requests' against dist/presentation.html (file://, offline)
@@ -247,7 +248,8 @@ src/
   vendor/three/            # Three.js r160 (MIT), pinned and vendored for offline use
 assets/fonts/              # Heebo, Rubik, JetBrains Mono (SIL OFL), self-hosted
 python/                    # guitarlab package + tests
-tests/browser/smoke.mjs    # headless browser smoke test
+tests/browser/smoke.mjs    # headless browser smoke test (source, standalone and Pages modes)
+tests/js/planner.test.mjs  # planner logic unit tests (node:test)
 docs/
   PLANNING.md              # concept, outline, trade-offs, decisions
   architecture.md          # data flow, module map, 3D model contract, RTL rules
@@ -283,18 +285,21 @@ Details: [`docs/architecture.md`](docs/architecture.md).
 - [`PRD.md`](PRD.md): requirements, priorities (with status), design decisions, success criteria
 - [`docs/PLANNING.md`](docs/PLANNING.md): concept, narrative, trade-off analysis, roadmap
 - [`docs/iterations.md`](docs/iterations.md): iteration log, including what was tested and how
-- [`docs/prompts/`](docs/prompts/): the development prompts, verbatim
+- [`docs/prompts/`](docs/prompts/): the development prompts, verbatim (001–006)
+- [`docs/compliance.md`](docs/compliance.md): assignment-requirement checklist with references
 
 ## Limitations
 
 - **3D guitar:** a detailed *procedural* illustration (carved top, edge-following burst, sourced Number One details), at about 60 fps on an integrated GPU. It is not photoreal and not a historical reproduction. A Blender GLB can replace it through the model contract.
 - **Content verification:** done in iteration 003, with direct links. A few tier claims (JustinGuitar, Moises, Fender Play) rely on search-indexed official pages because direct fetches were blocked. Re-check pricing before presenting.
-- **Testing:**
-  - Automated testing ran in headless Chrome on Windows only. Firefox, Safari and real touch devices are untested.
-  - Frame rate was about 60 fps on an integrated Intel GPU, but only 2–4 fps with software WebGL.
-- **Not yet run:** Lighthouse or an accessibility audit.
-- **Lighthouse (desktop, iteration 004):** Accessibility 100 and Best Practices 100. **Performance 75–79**, below the 85 target. The cause is synchronous WebGL setup (the environment map and shader linking), about 0.4–0.5 s of blocking time after the first paint.
-- **Deferred (by decision):** metronome, audio synthesis, 3D hotspots, YAML content pipeline, CI.
+- **Browser coverage:**
+  - The full automated suite (57–58 checks) runs in headless **Chrome** on Windows, against the source, the standalone file and the Pages site. The standalone suite also passed in **Edge**.
+  - **Firefox:** only a focused check of the standalone file was run (navigation, 3D, fretboard data, planner, summary, storage, console errors), not the full suite.
+  - **Not tested:** Safari, real phones and tablets (mobile layouts were checked in emulation at 390×844), and screen readers.
+- **Frame rate:** about 60 fps on an integrated Intel GPU; only 2–4 fps with software WebGL (machines without GPU acceleration).
+- **Lighthouse (desktop, iteration 004):** Accessibility 100 and Best Practices 100. **Performance 75–79**, below the internal target of 85. The cause is synchronous WebGL setup (the environment map and shader linking), about 0.4–0.5 s of blocking time after the first paint. The accessibility score is automated only; there has been no manual screen-reader review.
+- **CI / GitHub Pages:** `.github/workflows/pages.yml` exists, and every one of its build steps was replayed successfully on Ubuntu with Node 22 and Python 3.12. **It has not yet run on GitHub, so the deployment itself is unverified.**
+- **Deferred (by decision):** metronome, audio synthesis, 3D hotspots, YAML content pipeline.
 
 ## Third-party licences
 

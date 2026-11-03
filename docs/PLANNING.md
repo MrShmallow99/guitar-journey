@@ -1,5 +1,7 @@
 # Planning Document: Interactive Hebrew Presentation on the Electric Guitar Learning Journey
 
+> **Read this as the planning record.** It is the plan as revised in iteration 002, with later annotations. For the *current* state of the project, see [`../PRD.md`](../PRD.md) (status columns) and [`iterations.md`](iterations.md). Parts of the original plan changed later: CI is `pages.yml`, not `ci.yml`; `dist/` is generated and not committed; the routine builder became the iteration-004 practice planner.
+>
 > Status: **v0.2, revised after owner review (iteration 002).** Sections marked **✅ Decided** reflect owner decisions. Remaining **Decision needed** markers are still open.
 > Companion document: [`../PRD.md`](../PRD.md), the product requirements.
 >
@@ -287,7 +289,7 @@ Ranked by educational value relative to effort:
 | **Core** | Polished navigation, skill radar (#1), interactive roadmap (#4), Python-powered fretboard (#2), high-quality 3D guitar (#5), practical recommendations, curated resources |
 | **Later iterations** | Metronome (#3), routine builder (#6), audio synthesis (#7), myth/fact cards (#8), phrase lab, 3D hotspots with tone examples |
 
-The routine builder is replaced for now by a **static example session** on slide 10. The full personal summary (#9) is reduced to **personal next steps** on slide 11, computed from the radar.
+The routine builder is replaced for now by a **static example session** on slide 10. The full personal summary (#9) is reduced to **personal next steps** on slide 11, computed from the radar. *(Superseded in iteration 004: slide 10 now has the practice planner, and slide 11 a personal summary.)*
 
 Rule: **no control appears in the UI unless it works.** Planned features are not shown as disabled stubs.
 
@@ -440,7 +442,7 @@ guitar-journey/
 ├── LICENSE
 ├── .gitignore
 ├── .github/
-│   └── workflows/ci.yml         # pytest + content validation + build (+ Pages deploy)
+│   └── workflows/ci.yml         # pytest + content validation + build (+ Pages deploy)  [as built: pages.yml, iteration 005]
 │
 ├── index.html                   # Presentation entry point (lang="he" dir="rtl")
 ├── src/

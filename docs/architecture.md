@@ -18,7 +18,7 @@
                                         └──────────────────────────────────────────────────────────┘
 ```
 
-The presentation is static: `index.html` plus ES modules, with no build step and no framework. Python runs **at build time**. Its output is the only source of music-theory data in the page.
+The presentation is static: `index.html` plus ES modules, with no framework. The **source runs without a build step**. `npm run build` only produces the distribution artifacts (see [Distribution](#distribution)). Python runs **at build time**. Its output is the only source of music-theory data in the page.
 
 ## Distribution
 

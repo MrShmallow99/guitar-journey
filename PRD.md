@@ -2,9 +2,15 @@
 
 | | |
 |---|---|
-| **Document status** | v0.5, updated after iteration 005: distribution (GitHub Pages, standalone HTML, Windows launcher). Status columns reflect the current implementation. |
+| **Document status** | v0.6, updated after iteration 006: release-readiness review. Status columns reflect the current implementation. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
+
+**Changes in v0.6 (iteration 006)**
+
+- P6 (CI) status corrected.
+- Browser-coverage row updated.
+- Deferred features renumbered X1–X8, because their old IDs F20–F27 collided with F20–F26.
 
 **Changes in v0.5 (iteration 005)**
 
@@ -172,16 +178,18 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 
 ### 5.3 Deferred features (later iterations)
 
+*IDs renumbered in iteration 006: these were F20–F27, which collided with the implemented F20–F26 above.*
+
 | ID | Requirement | Pri |
 |---|---|---|
-| F20 | Practice metronome (Web Audio lookahead scheduler, subdivisions, tap tempo, gap click) | L |
-| ~~F21~~ | ~~Practice routine builder~~ | Delivered as the practice planner (F22–F25) in iteration 004 |
-| F22 | Plucked-string audio synthesis (notes, phrases, pickup tone examples) | L |
-| F23 | 3D hotspots with Hebrew labels; scale highlights on the 3D neck synced with the 2D fretboard | S |
-| F24 | Myth vs. fact cards, phrase lab | L |
-| F25 | Roadmap practice-hours exploration | L |
-| F26 | Light "projector" theme | S |
-| F27 | Python practice-log analyzer (Option B); optional runtime Python demo (Pyodide) | L |
+| X1 | Practice metronome (Web Audio lookahead scheduler, subdivisions, tap tempo, gap click) | L |
+| ~~X2~~ | ~~Practice routine builder~~ | Delivered as the practice planner (F22–F25) in iteration 004 |
+| X3 | Plucked-string audio synthesis (notes, phrases, pickup tone examples) | L |
+| X4 | 3D hotspots with Hebrew labels; scale highlights on the 3D neck synced with the 2D fretboard | S |
+| X5 | Myth vs. fact cards, phrase lab | L |
+| X6 | Roadmap practice-hours exploration | L |
+| X7 | Light "projector" theme | S |
+| X8 | Python practice-log analyzer (Option B); optional runtime Python demo (Pyodide) | L |
 
 ### 5.4 Python requirements
 
@@ -192,7 +200,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | P3 | Deterministic output with a SHA-256 content hash; `--check` mode detects stale committed data | M | ✅ |
 | P4 | A `pytest` suite verifies the output against known reference positions and theory invariants | M | ✅ (27 tests) |
 | P5 | YAML content pipeline with schema validation; Hebrew/BiDi/glossary lint | S | – |
-| P6 | CI (GitHub Actions) runs the tests and `--check` | S | – |
+| P6 | CI (GitHub Actions) runs the tests and `--check` | S | ◐ `.github/workflows/pages.yml` runs pytest, `--check`, the planner unit tests and the build before deploying. Every step was replayed on Ubuntu (Node 22, Python 3.12); **not yet run on GitHub**. Browser tests are local only. |
 
 **The Python-to-presentation link must be verifiable** (see PLANNING §4, "Decision"). The fretboard contains no built-in music data. The provenance badge displays the hash of the generated data. The 3D frets are placed from the generated fret positions.
 
@@ -203,7 +211,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | Stack | Static HTML, CSS and vanilla JavaScript ES modules; no framework or bundler. Three.js r160, pinned and vendored together with its MIT licence. |
 | Serving | Three methods: GitHub Pages (any subpath); the standalone `dist/presentation.html` (works from `file://`); or a local server (`launch.bat` / `scripts/serve.py`). The **source** `index.html` still needs HTTP because it uses ES modules; opened from `file://`, it explains the alternatives. |
 | Offline | No CDN at runtime: Three.js and the fonts are vendored. The standalone file embeds everything and makes no requests; this is tested with the network emulated offline. |
-| Browsers | Latest Chrome, Edge and Firefox (primary); Safari (best effort). Iteration 002 was tested in headless Chrome only. |
+| Browsers | Latest Chrome, Edge and Firefox (primary); Safari (best effort). **Tested:** full suite in headless Chrome (source, standalone, Pages); standalone suite in Edge; focused standalone check in Firefox. **Not tested:** Safari, real mobile devices. |
 | RTL/BiDi | `lang="he" dir="rtl"`; CSS logical properties; `<bdi>` or `dir="ltr"` isolation for Latin terms, numbers and units; fretboard, tab and diagrams stay LTR. |
 | Responsive | Fluid full-viewport slides. Below 900 px, slides become a single scrollable column and the 3D layer dims. |
 | Fonts | Self-hosted variable woff2 (SIL OFL): Heebo (body), Rubik (display), JetBrains Mono (diagrams). |
