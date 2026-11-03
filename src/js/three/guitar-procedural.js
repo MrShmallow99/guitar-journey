@@ -224,7 +224,7 @@ function materials(burst) {
     bobbin: new THREE.MeshStandardMaterial({ color: 0xf4efe3, roughness: 0.5 }),
     black: new THREE.MeshPhysicalMaterial({ color: 0x0b0a0a, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04 }),
     plate: new THREE.MeshStandardMaterial({ color: 0x111010, roughness: 0.5 }),
-    inlay: new THREE.MeshPhysicalMaterial({ color: 0xf1e9d8, roughness: 0.3, iridescence: 0.55, iridescenceIOR: 1.4, clearcoat: 0.5 }),
+    inlay: new THREE.MeshStandardMaterial({ color: 0xf1e9d8, roughness: 0.28, metalness: 0.05, emissive: 0x15130f }),
     knob: new THREE.MeshPhysicalMaterial({ color: 0xc99027, roughness: 0.26, metalness: 0.15, clearcoat: 1, clearcoatRoughness: 0.08 }),
     string: new THREE.MeshStandardMaterial({ color: 0xe4e0d8, metalness: 1, roughness: 0.28 }),
     bone: new THREE.MeshStandardMaterial({ color: 0xf2ecdc, roughness: 0.55 }),
