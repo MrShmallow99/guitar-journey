@@ -2,7 +2,8 @@ import { Deck } from './core/deck.js';
 import { initRadar } from './components/radar.js';
 import { initRoadmap } from './components/roadmap.js';
 import { initTimeline } from './components/timeline.js';
-import { initNextSteps } from './components/next-steps.js';
+import { initPlanner } from './components/planner.js';
+import { initSummary } from './components/summary.js';
 import { initFretboard, initFretboardError } from './components/fretboard.js';
 
 const DATA_URL = 'src/data/fretboard.json';
@@ -31,7 +32,10 @@ async function initStage(deck, data) {
     const { GuitarStage, webglAvailable } = await import('./three/stage.js');
     if (!webglAvailable()) return fail(new Error('WebGL not supported'));
     const { createProceduralGuitar } = await import('./three/guitar-procedural.js');
+    // let the slides paint and become interactive before building the 3D scene
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
     const model = createProceduralGuitar({ fretDistances: data?.fret_positions.distance_from_nut_in ?? [] });
+    await new Promise((resolve) => setTimeout(resolve)); // split the work into shorter tasks
     const stage = new GuitarStage(document.getElementById('scene'), model);
 
     const viewButtons = [...viewer.querySelectorAll('[data-view]')];
@@ -60,6 +64,7 @@ async function initStage(deck, data) {
     deck.addEventListener('change', (e) => sync(e.detail));
     narrow.addEventListener('change', () => sync({ slide: deck.current }, { entering: false }));
     sync({ slide: deck.current });
+    await stage.ready;
     window.__stage = stage; // exposed for debugging and the browser smoke test
   } catch (err) {
     fail(err);
@@ -73,7 +78,8 @@ async function main() {
   initRadar();
   initRoadmap();
   initTimeline();
-  initNextSteps(deck);
+  initPlanner(deck);
+  initSummary(deck);
   deck.start();
 
   let data = null;

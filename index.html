@@ -16,7 +16,7 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "./src/vendor/three/three.module.js",
+        "three": "./src/vendor/three/three.module.min.js",
         "three/addons/": "./src/vendor/three/addons/"
       }
     }
@@ -64,11 +64,12 @@
             <li><span class="acts__num">ב׳</span><div><strong>אבני הבניין</strong><span>מה בונים, ובאיזה סדר זה משתלם</span></div></li>
             <li><span class="acts__num">ג׳</span><div><strong>הדרך קדימה</strong><span>איך מתאמנים, מודדים וממשיכים</span></div></li>
           </ol>
-          <p class="hint">ניווט: <kbd>←</kbd> או <kbd>רווח</kbd> לשקף הבא · <kbd>→</kbd> לשקף הקודם</p>
+          <p class="hint hint--keys">ניווט: <kbd>←</kbd> או <kbd>רווח</kbd> לשקף הבא · <kbd>→</kbd> לשקף הקודם · או הכפתורים שבתחתית המסך</p>
+          <p class="hint hint--touch">ניווט: הכפתורים שבתחתית המסך, או החלקה ימינה ושמאלה</p>
         </div>
         <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>
       </div>
-      <p class="model-credit">בתלת-ממד: גיטרה מסוגננת בהשראת ה-<bdi lang="en">Les Paul</bdi> <bdi lang="en">“Number One”</bdi> של ג׳ימי פייג׳ · מודל ראשוני</p>
+      <p class="model-credit">בתלת-ממד: גיטרה שנבנתה בקוד, בהשראת ה-<bdi lang="en">Les Paul</bdi> <bdi lang="en">“Number One”</bdi> של ג׳ימי פייג׳ — המחשה חינוכית, לא שחזור היסטורי</p>
     </section>
 
     <!-- 2 · Skill map (self-assessment radar) -->
@@ -293,7 +294,18 @@
               <li>חברו תנוחות סמוכות דרך התווים המשותפים להן.</li>
             </ul>
             <p class="mistake"><strong>טעות נפוצה</strong> לשנן ״קופסה״ אחת ולהיתקע בה לשנים. חברו תנוחות, נגנו לאורך מיתר אחד, ושימו לב על איזה תו אתם נוחתים.</p>
-            <p class="provenance" id="fb-provenance"></p>
+            <div class="fretboard__data">
+              <p class="provenance" id="fb-provenance"></p>
+              <details class="howto">
+                <summary>איך זה עובד?</summary>
+                <ol class="howto__flow">
+                  <li><strong>Python מחשב — מראש.</strong> תוכנית <bdi lang="en">Python</bdi> (<code dir="ltr">guitarlab</code>) מחשבת את התווים על הצוואר בכוונון סטנדרטי, את איות הסולמות ב-<bdi>12</bdi> טוניקות, את המרווחים ואת חמש התנוחות. היא נבדקת בבדיקות אוטומטיות.</li>
+                  <li><strong>התוצאה נשמרת כקובץ נתונים.</strong> <code dir="ltr">fretboard.json</code>, עם ״טביעת אצבע״ (<bdi lang="en">hash</bdi>) — אותה טביעה שמופיעה כאן למעלה.</li>
+                  <li><strong>JavaScript מצייר — בדפדפן.</strong> כשאתם בוחרים סולם, הדפדפן קורא את הקובץ ומצייר את הצוואר. גם מיקום הסריגים בגיטרה בתלת-ממד מגיע מאותו קובץ.</li>
+                </ol>
+                <p class="note"><bdi lang="en">Python</bdi> לא רץ בדפדפן: הוא רץ פעם אחת, לפני ההצגה, ומה שאתם רואים כאן הוא התוצאה שלו.</p>
+              </details>
+            </div>
           </div>
         </div>
       </div>
@@ -377,41 +389,55 @@
 
     <!-- ============ ACT III: THE ROAD AHEAD ============ -->
 
-    <!-- 10 · Practice that works -->
+    <!-- 10 · Practice that works + personal practice planner -->
     <section class="slide slide--wide" data-act="חלק ג׳ · הדרך קדימה" data-scene="hero" data-scene-mode="off" aria-label="שקף 10: אימון שעובד">
       <div class="slide__inner">
         <div class="slide__content">
           <p class="kicker">אימון ומדידה</p>
-          <h2>אימון שעובד — <span class="accent">והתקדמות שאפשר לשמוע</span></h2>
-          <p class="lead">עקביות ומיקוד מנצחים כמות. אימון קצר וממוקד בתדירות גבוהה עדיף בדרך כלל על אימון ארוך ונדיר.</p>
+          <h2>אימון שעובד — <span class="accent">ובנוי בשבילכם</span></h2>
+          <p class="lead">עקביות ומיקוד מנצחים כמות: אימון קצר וממוקד בתדירות גבוהה עדיף בדרך כלל על אימון ארוך ונדיר. בחרו זמן ומטרה, ונבנה אימון לפי הדירוג שלכם משקף <bdi>2</bdi> — נקודת פתיחה להתאמה, לא מתכון מובטח.</p>
         </div>
-        <div class="practice">
-          <section class="practice__session">
-            <h3>דוגמה לאימון של <bdi>30</bdi> דקות</h3>
-            <div class="session" role="img" aria-label="חימום 5 דקות, טכניקה ממוקדת 10 דקות, שיר ורפרטואר 10 דקות, אלתור או יצירה 5 דקות">
-              <span style="--min:5"><b>חימום רפוי</b><bdi>5′</bdi></span>
-              <span style="--min:10"><b>טכניקה ממוקדת</b><bdi>10′</bdi></span>
-              <span style="--min:10"><b>שיר ורפרטואר</b><bdi>10′</bdi></span>
-              <span style="--min:5"><b>אלתור / יצירה</b><bdi>5′</bdi></span>
+        <div class="planner" id="planner">
+          <div class="planner__controls" id="planner-form">
+            <fieldset class="choices">
+              <legend>כמה זמן יש לכם?</legend>
+              <div class="choices__row" id="planner-minutes"></div>
+            </fieldset>
+            <fieldset class="choices">
+              <legend>מה המטרה העיקרית?</legend>
+              <div class="choices__row" id="planner-goals"></div>
+            </fieldset>
+            <p class="planner__profile" id="planner-profile"></p>
+            <div class="planner__actions">
+              <button type="button" class="btn btn--accent" id="planner-generate">בנו לי אימון</button>
+              <button type="button" class="btn" id="planner-copy" hidden>העתקת התוכנית</button>
+              <button type="button" class="btn btn--ghost" id="planner-reset" hidden>ניקוי התוכנית</button>
             </div>
-            <p class="note">התאימו את החלוקה למטרות שלכם — זו נקודת פתיחה, לא כלל.</p>
-            <ul class="principles">
-              <li><strong>מטרה אחת לכל בלוק.</strong> ״לנקות את המעבר בתיבה 3״, לא ״לתרגל סולו״.</li>
-              <li><strong>לאט ומדויק לפני מהר.</strong> מעלים קצב רק אחרי חזרות נקיות.</li>
-              <li><strong>מקליטים, מקשיבים, מתקנים.</strong> האוזן מהצד שומעת יותר.</li>
-            </ul>
-          </section>
-          <section class="practice__metrics">
-            <h3>מה מודדים — שיפורים שאפשר לראות ולשמוע</h3>
-            <dl class="metrics">
-              <div><dt>מהירות נקייה</dt><dd>הקצב המרבי שבו קטע נשמע נקי — למשל, שלוש פעמים ברצף.</dd></div>
-              <div><dt>החלפות בדקה</dt><dd>כמה מעברים נקיים בין שני אקורדים בדקה.</dd></div>
-              <div><dt>הקלטה חודשית</dt><dd>אותו קטע, אותם תנאים — ומשווים לחודש הקודם.</dd></div>
-              <div><dt>רפרטואר</dt><dd>כמה שירים שלמים אתם מנגנים בעל פה.</dd></div>
-              <div><dt>שמיעה</dt><dd>כמה זמן לוקח להוציא ריף מוכר מהשמיעה.</dd></div>
-            </dl>
+            <p class="planner__status" id="planner-status" role="status"></p>
+            <details class="planner__how">
+              <summary>איך האימון נבחר?</summary>
+              <ol>
+                <li><strong>הזמן</strong> קובע את המבנה: חימום, מיקוד, תחזוקה, יישום במוזיקה, ומ-<bdi>45</bdi> דקות גם הקלטה קצרה.</li>
+                <li><strong>כישור המיקוד</strong> נבחר לפי שילוב: עד כמה הוא משרת את המטרה (משקל גבוה יותר), ועד כמה דירגתם אותו נמוך.</li>
+                <li><strong>תחזוקה:</strong> אם קצב או טכניקה דורגו <bdi>2</bdi> ומטה — הם נכנסים לאימון, גם כשהמטרה אחרת.</li>
+                <li><strong>יישום:</strong> כל אימון נגמר בנגינה של מוזיקה אמיתית — שיר, סולו או ג׳אם.</li>
+                <li>התרגילים מותאמים לרמה שדירגתם, ומגיעים מהשקפים <bdi>4–9</bdi>.</li>
+              </ol>
+              <p class="note">כללי אצבע מעשיים, לא תוכנית מדעית: התאימו את הזמנים לפי מה שאתם שומעים ומרגישים.</p>
+            </details>
+            <details class="planner__how">
+              <summary>מה מודדים — שיפורים שאפשר לשמוע</summary>
+              <dl class="metrics">
+                <div><dt>מהירות נקייה</dt><dd>הקצב המרבי שבו קטע נשמע נקי — למשל, שלוש פעמים ברצף.</dd></div>
+                <div><dt>החלפות בדקה</dt><dd>כמה מעברים נקיים בין שני אקורדים בדקה.</dd></div>
+                <div><dt>הקלטה חודשית</dt><dd>אותו קטע, אותם תנאים — ומשווים לחודש הקודם.</dd></div>
+                <div><dt>רפרטואר</dt><dd>כמה שירים שלמים אתם מנגנים בעל פה.</dd></div>
+                <div><dt>שמיעה</dt><dd>כמה זמן לוקח להוציא ריף מוכר מהשמיעה.</dd></div>
+              </dl>
+            </details>
             <p class="mistake"><strong>טעות נפוצה</strong> למדוד רק ״כמה זמן התאמנתי״. זמן הוא קלט; מה שחשוב הוא מה השתפר.</p>
-          </section>
+          </div>
+          <section class="planner__result" id="planner-result" aria-label="האימון שלכם" aria-live="polite"></section>
         </div>
       </div>
     </section>
@@ -455,7 +481,7 @@
               </ul>
             </div>
           </section>
-          <section class="next-steps card" id="next-steps" aria-live="polite"></section>
+          <section class="summary card" id="summary" aria-live="polite" aria-label="הסיכום האישי שלכם"></section>
         </div>
         <p class="closing__line">התקדמות היא מפה. בחרו כיוון אחד לשבוע הקרוב — והתחילו.</p>
       </div>
