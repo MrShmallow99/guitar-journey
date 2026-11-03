@@ -1,0 +1,65 @@
+# Build and deploy the presentation to GitHub Pages.
+# Runs only after the repository is on GitHub and Pages is set to
+# "Source: GitHub Actions" (see README → "GitHub Pages").
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Python tests and generated-data freshness
+        working-directory: python
+        run: |
+          python -m pip install --quiet "pytest>=8"
+          python -m pytest -q
+          python -m guitarlab.build --check
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install build tooling (esbuild, puppeteer-core)
+        run: npm ci
+
+      - name: Planner logic tests
+        run: npm run test:unit
+
+      - name: Build dist/site (and dist/presentation.html)
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
