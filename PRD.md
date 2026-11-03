@@ -2,9 +2,15 @@
 
 | | |
 |---|---|
-| **Document status** | v0.4, updated after iteration 004: practice planner and cross-slide coherence. Status columns reflect the current implementation. |
+| **Document status** | v0.5, updated after iteration 005: distribution (GitHub Pages, standalone HTML, Windows launcher). Status columns reflect the current implementation. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
+
+**Changes in v0.5 (iteration 005)**
+
+- Three launch methods (F30–F32).
+- The Serving and Offline requirements are revised.
+- D16–D19 added.
 
 **Changes in v0.4 (iteration 004)**
 
@@ -160,6 +166,9 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | F24 | Deterministic, explainable logic (`core/planner.js`) shared by slides 10 and 11. Changes regenerate live; choices persist; the plan can be cleared. | M | ✅ (14 unit tests) |
 | F25 | Copy the plan as readable text | S | ✅ |
 | F26 | Slide 7 "How this works": build-time Python → JSON → JavaScript in the browser | S | ✅ |
+| F30 | **Standalone HTML** `dist/presentation.html`: one self-contained file that works from `file://`, offline, with full functionality | M | ✅ (Chrome, Edge: full suite; Firefox: focused check) |
+| F31 | **GitHub Pages:** relative paths only; a reproducible build (`npm run build` → `dist/site`); a deployment workflow | M | ✅ (tested under a simulated subpath; the workflow hasn't run on GitHub yet) |
+| F32 | **Windows launcher** `launch.bat`: Python detection, server start, browser open, duplicate reuse, busy-port fallback, clear errors and shutdown | S | ✅ (run on Windows; Ctrl+C path manual) |
 
 ### 5.3 Deferred features (later iterations)
 
@@ -192,8 +201,8 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | Area | Requirement |
 |---|---|
 | Stack | Static HTML, CSS and vanilla JavaScript ES modules; no framework or bundler. Three.js r160, pinned and vendored together with its MIT licence. |
-| Serving | Served over HTTP (`python -m http.server`), with GitHub Pages later. `file://` is unsupported because browsers block ES modules there. The page detects this and shows instructions. |
-| Offline | No CDN at runtime: Three.js and the fonts are vendored. |
+| Serving | Three methods: GitHub Pages (any subpath); the standalone `dist/presentation.html` (works from `file://`); or a local server (`launch.bat` / `scripts/serve.py`). The **source** `index.html` still needs HTTP because it uses ES modules; opened from `file://`, it explains the alternatives. |
+| Offline | No CDN at runtime: Three.js and the fonts are vendored. The standalone file embeds everything and makes no requests; this is tested with the network emulated offline. |
 | Browsers | Latest Chrome, Edge and Firefox (primary); Safari (best effort). Iteration 002 was tested in headless Chrome only. |
 | RTL/BiDi | `lang="he" dir="rtl"`; CSS logical properties; `<bdi>` or `dir="ltr"` isolation for Latin terms, numbers and units; fretboard, tab and diagrams stay LTR. |
 | Responsive | Fluid full-viewport slides. Below 900 px, slides become a single scrollable column and the 3D layer dims. |
@@ -232,6 +241,10 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | D13 | Planner logic: fixed layouts per duration. Focus = argmax(0.6 × goal relevance + 0.4 × need). Weak foundations (rhythm or technique ≤ 2) take the support block. Every session ends in an application to real music. | Goal-led but sensitive to weaknesses; transparent, testable, no backend. Presented as a starting point, not an optimised programme. | ✅ Decided (004) |
 | D14 | One source of truth: the plan is always derived from the current ratings + choices; only the choices are stored | Slides 10 and 11 can never disagree; no duplicated recommendation logic | ✅ Decided (004) |
 | D15 | Explain the Python link on slide 7 in plain Hebrew (a build-time step), without Pyodide | Owner requirement; avoids implying Python runs in the browser | ✅ Decided (004) |
+| D16 | Use **esbuild** (one pinned devDependency) to bundle into a classic IIFE script, rather than adopting Vite for the whole project | Keeps the no-build source architecture. A classic script runs from `file://`, where ES modules are blocked. | ✅ Decided (005) |
+| D17 | Embed the generated JSON as `<script type="application/json">`; `main.js` reads it if present, otherwise it fetches the file | `fetch()` of local files fails under `file://`. The data is identical and the hash is preserved. One small source change. | ✅ Decided (005) |
+| D18 | Do **not** commit `dist/`; CI rebuilds it | Generated, about 0.9 MB, and would go stale. The offline file is available from the Pages site (`/presentation.html`) or a Release. | ✅ Decided (005) |
+| D19 | The launcher is a thin `launch.bat` plus `scripts/serve.py`; exclusive port binding on Windows | Port and duplicate logic are reliable in Python, not batch. The stdlib `SO_REUSEADDR` default let two servers share a port on Windows. | ✅ Decided (005) |
 
 ## 9. Success Criteria
 

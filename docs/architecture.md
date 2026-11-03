@@ -20,6 +20,24 @@
 
 The presentation is static: `index.html` plus ES modules, with no build step and no framework. Python runs **at build time**. Its output is the only source of music-theory data in the page.
 
+## Distribution
+
+```
+source (unchanged, ES modules + import map)
+   │  npm run build  (scripts/build.mjs, esbuild)
+   ├─► dist/presentation.html   one file: IIFE bundle (app + three.js r160) · CSS · fonts as data URIs
+   │                            · generated JSON in <script type="application/json" id="guitar-data">
+   └─► dist/site/               index.html + src/ + assets/ (relative paths) + presentation.html + .nojekyll
+                                └─► GitHub Pages via .github/workflows/pages.yml
+launch.bat ─► scripts/serve.py ─► http://127.0.0.1:8000/ (serves the source)
+```
+
+- **Why a classic script:** browsers block ES modules and `fetch()` on `file://` pages. esbuild resolves the import-map specifiers (`three`, `three/addons/…`) to the vendored files, inlines the two dynamic imports, and emits one IIFE.
+- **Data:** `main.js` reads `#guitar-data` when it is present (standalone build), otherwise it fetches `src/data/fretboard.json`. Same JSON, same hash.
+- **Self-containment guard:** the build fails if the markup references any `src`/`href` that isn't a `data:` URI or a fragment, or if the CSS has a non-`data:` `url()` or an `@import`. Ordinary `<a href>` links to the resource websites are navigation, not loads.
+- **Marked blocks:** `index.html` wraps the module/import-map tags and the `file://` warning in `<!-- build:standalone-remove -->` comments, which the build strips.
+- **Pages:** the site is the source layout itself. Every path is relative, so any repository subpath works.
+
 ## Python → presentation link
 
 | What Python generates | Where it is used | How to verify |

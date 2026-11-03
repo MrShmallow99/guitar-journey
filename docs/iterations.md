@@ -191,3 +191,71 @@ Scope: improve the existing experience. No unrelated features were added. The 11
 - **Ratings and plan reset separately.** Resetting the radar doesn't clear a generated plan; the plan then switches to the "no ratings" basis, and says so.
 - **The planner's exercises haven't been reviewed by a guitar teacher.** Tempo suggestions such as 60–70 BPM are reasonable defaults, not research findings.
 - **Not tested:** Firefox, Safari and real touch devices. The Lighthouse accessibility score is automated only; there has been no screen-reader walkthrough.
+
+---
+
+## Iteration 005: Distribution and launch options (2026-11-03)
+
+**Prompt:** [`prompts/005-distribution-and-launch.md`](prompts/005-distribution-and-launch.md)
+
+### Commits
+
+1. `Record prompt 005 verbatim`
+2. `Standalone build: self-contained dist/presentation.html (file://)`
+3. `Smoke test: standalone (file://, offline) and Pages (subpath) modes`
+4. `Windows one-click launcher (launch.bat + scripts/serve.py)`
+5. `GitHub Actions workflow for GitHub Pages`
+6. Documentation (this entry)
+
+### Decisions
+
+| Decision | Rationale |
+|---|---|
+| **esbuild** as the only new dependency (pinned 0.24.2), driven by `scripts/build.mjs` | Bundles the unchanged ES-module source into one **classic IIFE script**, which runs from `file://` where ES modules are blocked. A small plugin resolves the import-map specifiers to the same vendored Three.js r160. Vite would have changed the development architecture for no gain. |
+| Embed the Python-generated JSON as `<script type="application/json" id="guitar-data">` | `fetch()` of local files fails under `file://`. `main.js` reads the element when present, otherwise it fetches as before. This is the only behavioural source change. The data and its hash are identical. |
+| Fonts as base64 `data:` URIs inside the inlined CSS; the favicon was already a data URI | No file or network loads at all |
+| Build-time guard | The build fails if any `src`/`href` in the markup isn't a `data:` URI or a fragment, or if the CSS has a non-`data:` `url()` or an `@import` |
+| `dist/` **not committed** | Generated, about 0.9 MB, and would go stale; CI rebuilds it. The offline file is published with the site at `/presentation.html`. |
+| Pages site = the source layout (`index.html`, `src/`, `assets/`) + `presentation.html` + `.nojekyll` | All paths were already relative (checked: no absolute `src`/`href`/`url()`/`fetch`/`import()` paths), so any repository subpath works |
+| Launcher: thin `launch.bat` plus `scripts/serve.py` | Port and duplicate logic are reliable and testable in Python. `serve.py` also forces correct MIME types, because a Windows registry can map `.js` to `text/plain`. |
+
+### Problems found while testing, and fixes
+
+| Problem | Found by | Fix |
+|---|---|---|
+| The standalone page didn't start: "Unexpected token '<'" | `test:standalone` timed out; a console capture showed the error | The bundle was passed as a **replacement string** to `String.replace`, so the `$&` and `` $` `` sequences in minified Three.js were expanded into chunks of HTML. Fixed with replacer functions. |
+| The self-containment guard flagged JavaScript `toDataURL(` as a CSS `url(` | The first build run | The guard checks markup with the script removed, and checks `url()` only in the CSS |
+| "Copy the plan" never completed under `file://` (`clipboard.writeText` never settled) | `test:standalone` | A 1.2 s deadline, then the `execCommand('copy')` fallback. This applies to every version. |
+| **On Windows, the launcher bound a port another program was already listening on** (two servers sharing one port) | Launcher scenario test with a foreign server on the same port | The stdlib `SO_REUSEADDR` default allows this on Windows. Now `allow_reuse_address = False` plus `SO_EXCLUSIVEADDRUSE` on Windows, so a busy port fails and the next one is tried. |
+| Launcher messages didn't appear when output was redirected; printing a Hebrew path could crash on some code pages | Launcher test (empty output file) | Line-buffered output with `errors="replace"` |
+| Pages test crashed while deleting its temp directory (EPERM) | `test:pages` | Wait for the server process to exit before removing the directory (Windows file locks) |
+
+### Tests actually performed
+
+| Test | Environment | Result |
+|---|---|---|
+| `npm run test:browser`: the source version, served | Headless Chrome, GPU | 57/57 |
+| `npm run test:standalone`: `dist/presentation.html` as a **file:// URL**, with the **network emulated offline** (`page.setOfflineMode(true)`) | Headless Chrome, GPU | **58/58.** This includes all navigation, the 3D model and controls, radar → roadmap → planner → summary, the Python data and hash, BiDi, mobile layouts, persistence across reloads, and: **zero network requests, and the only file loaded is presentation.html.** |
+| Same standalone suite | **Microsoft Edge** | 58/58 |
+| Focused standalone check from `file://`: slides, keys, WebGL (36.6k triangles), fretboard (12 notes, hash `08417f0d7ad2…`), planner, summary, localStorage persistence, console errors | **Firefox**, via WebDriver BiDi | All passed; no errors |
+| `npm run test:pages`: `dist/site` served under **`/guitar-journey/`** | Headless Chrome | **58/58**, including "every request stays under the subpath" |
+| Pixel parity, source vs. standalone (slides 2, 3, 7, 10; desktop and mobile; reduced motion; fresh storage) | Headless Chrome | 7 of 8 views identical. Desktop slide 7 differs on 0.069% of pixels (small rendering noise in the fretboard area). |
+| Visual inspection of the standalone 3D slides (1, 8; desktop and mobile) | Screenshots | Same rendering and layout as the source |
+| **Fresh `git clone`**, replaying the CI steps: pytest, `--check`, `npm ci`, unit tests, build, then the Pages and standalone browser suites on the clone's output | Windows | All passed (27, OK, 14/14, 58/58, 58/58) |
+| Workflow YAML | PyYAML parse | Valid (2 jobs; push and workflow_dispatch triggers). **It has not run on GitHub.** |
+| Launcher A: first launch by full path from `C:\`, repository path with spaces and Hebrew | Windows 11, cmd | Server started; identity header with the correct Hebrew path; `.js` served as `text/javascript`, `.json` as `application/json` |
+| Launcher B: duplicate launch | Windows | Reused the running instance and exited in about 0.8 s; no second listener |
+| Launcher C and D: a foreign server on the first port | Windows | Moved to the next port and served the deck; a later launch skipped the foreign port and reused ours |
+| Launcher E: no Python on PATH | Windows | Clear install/alternative message; exit code 1 |
+| Server stop (process terminated, as when its window closes) | Windows | Port released |
+
+### Not tested and remaining limitations
+
+- **The GitHub Actions workflow hasn't run on GitHub**, so the Pages deployment itself is unverified. Its steps were replayed locally on a fresh clone.
+- **Launcher:**
+  - **Ctrl+C stop and browser opening weren't automated.** The browser was suppressed with `--no-browser` to avoid opening windows on this machine.
+  - **Double-clicking from Explorer wasn't performed;** cmd invocation was.
+- **Standalone in Safari:** not tested.
+- **Standalone `localStorage` behaviour varies by browser.** Chrome and Edge share `file://` storage across local files; Firefox scopes it per file. It is guarded everywhere.
+- **The standalone file is a snapshot.** Rebuild after changing the source.
+- **During launcher testing, a `python -m http.server 8000` process that wasn't started by these tests (PID 2404) was stopped** while cleaning up port 8000. If you had a server running, restart it.

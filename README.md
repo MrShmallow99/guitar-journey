@@ -4,7 +4,7 @@ An interactive, 11-slide **Hebrew (RTL)** presentation about learning electric g
 
 It uses HTML/CSS/vanilla JS, **Three.js** for a 3D guitar inspired by Jimmy Page's Les Paul "Number One", and **Python** for a data engine that generates all the music-theory data shown on the interactive fretboard.
 
-> **Status: iteration 004 (practice planner and cross-slide coherence).** The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
+> **Status: iteration 005 (distribution: GitHub Pages, standalone HTML, Windows launcher).** Earlier: iteration 004 (practice planner and cross-slide coherence). The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
 
 ![Opening slide](docs/screenshots/slide-01.png)
 
@@ -27,17 +27,86 @@ On phones the guitar renders only inside in-flow viewer boxes, never behind text
 
 ---
 
-## Quick start
+## Running the presentation: three ways
 
-Requirements: **Python 3.11 or later** and a modern browser. Node.js is only needed for the optional browser test.
+| | Best for | Needs | How |
+|---|---|---|---|
+| **1. GitHub Pages** | Sharing and evaluation (recommended) | A browser | Open the site URL |
+| **2. Standalone HTML** | Offline, portable, double-click | A browser | Open `dist/presentation.html` |
+| **3. Local launcher** | Development and live demos from the repository | Python 3.8+ | Double-click `launch.bat` |
+
+All three run the **same presentation**: 11 slides, the 3D guitar, radar, roadmap, Python-generated fretboard, practice planner and summary.
+
+### 1. GitHub Pages (recommended for sharing)
+
+The workflow in `.github/workflows/pages.yml` runs the Python tests, the data freshness check and the planner unit tests, builds `dist/site/`, and deploys it.
+
+**To enable it** (once the repository is on GitHub):
+
+1. Go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
+2. Push to `main`, or run the workflow manually under **Actions → Deploy to GitHub Pages → Run workflow**.
+3. The deployed URL appears in the workflow summary, and under Settings → Pages.
+
+**URL structure** (for example, user `itamar`, repository `guitar-journey`):
+
+| URL | What it is |
+|---|---|
+| `https://itamar.github.io/guitar-journey/` | The presentation (`index.html`) |
+| `https://itamar.github.io/guitar-journey/#/7` | Deep link to slide 7 (any `#/1` … `#/11`) |
+| `https://itamar.github.io/guitar-journey/presentation.html` | The standalone single-file version, for downloading or offline use |
+| `…/src/…`, `…/assets/…` | Scripts, styles, the generated data and fonts |
+
+Every path in the project is relative, so the site works under any repository subpath. This is tested by serving `dist/site` under `/guitar-journey/` (`npm run test:pages`).
+
+### 2. Standalone HTML (offline, double-click)
 
 ```bash
-# 1. Serve the folder (browsers block ES modules on file://)
-python -m http.server 8000
-# 2. Open http://localhost:8000
+npm install        # once: esbuild + puppeteer-core (dev tooling only)
+npm run build      # -> dist/presentation.html  (about 0.9 MB)  and  dist/site/
 ```
 
-The generated data (`src/data/fretboard.json`) is committed, so the deck runs without building anything.
+Double-click `dist/presentation.html`, or copy that single file anywhere (a USB stick, an email attachment). It runs from `file://` with **no server, no Python and no internet**. Everything is embedded: the bundled JavaScript (including Three.js), the CSS, the fonts and the Python-generated fretboard data. The build fails if any external resource reference remains, and `npm run test:standalone` runs the full browser suite against the file with the network switched off.
+
+**Differences from the served version:**
+
+- **Saved progress:** ratings and the plan are saved in `localStorage` as usual. Chrome and Edge share `file://` storage between local files, while Firefox keeps it per file. If storage is blocked, the deck still works but forgets choices on reload (all storage calls are guarded).
+- **Copy button:** "Copy the plan" uses the clipboard API, with a timed fallback, because `file://` pages may not get clipboard permission.
+- **Updates:** the file is a snapshot of the build. Rebuild after changing the source or the Python data.
+
+### 3. Local launcher (Windows)
+
+Double-click **`launch.bat`** in the repository root. It:
+
+- finds Python 3.8+ (`python`, then `py -3`), or explains how to install it;
+- starts a local server on `http://127.0.0.1:8000/` (localhost only) and opens your default browser;
+- **reuses** an instance that is already serving this folder instead of starting a duplicate;
+- **skips busy ports**: if another program is using 8000, it moves to 8001, and so on up to 8009;
+- **stops** when you press **Ctrl+C** or close its window.
+
+Options: `launch.bat --port 9000`, `launch.bat --no-browser`. The launcher works from paths with spaces and non-Latin (e.g. Hebrew) characters. On macOS or Linux, run the same server with `python3 scripts/serve.py` (or `npm start`).
+
+The launcher is optional. Plain `python -m http.server 8000` still works too, though on some Windows machines it serves `.js` files with the wrong MIME type, which breaks ES modules; `serve.py` avoids that.
+
+### Commands
+
+| Task | Command |
+|---|---|
+| Run the source locally | `launch.bat` · `npm start` · `python scripts/serve.py` |
+| Build the standalone HTML and the Pages site | `npm run build` (standalone only: `npm run build:standalone`) |
+| Test the standalone file (`file://`, offline) | `npm run test:standalone` |
+| Test the Pages site under a subpath | `npm run test:pages` |
+| Build and test both artifacts | `npm run test:dist` |
+| Test the source version | `npm run test:browser` · `npm run test:unit` · `cd python && python -m pytest` |
+
+### Why `dist/` is not committed
+
+`dist/` is generated and listed in `.gitignore`:
+
+- it is about 0.9 MB of minified code, which would bloat the history on every change;
+- it could silently fall out of date with the source;
+- CI rebuilds it from source for every Pages deployment.
+
+To share the offline file, take it from the deployed site (`…/presentation.html`), attach it to a GitHub Release, or run `npm run build`.
 
 ### Navigation
 
@@ -126,7 +195,9 @@ python -m pytest                     # 27 tests
 ```bash
 npm install                 # puppeteer-core only; it drives your installed Chrome/Edge
 npm run test:unit           # 14 planner logic tests (node:test, no dependencies)
-npm run test:browser        # 57 checks
+npm run test:browser        # 57 checks against the source (served)
+npm run test:standalone     # same checks + 'no network requests' against dist/presentation.html (file://, offline)
+npm run test:pages          # same checks + 'stays under the subpath' against dist/site under /guitar-journey/
 npm run screenshots         # same checks, and refreshes docs/screenshots/
 ```
 
@@ -159,6 +230,10 @@ Set `CHROME_PATH` if Chrome isn't found automatically. Set `SOFTWARE_GL=1` to fo
 
 ```
 index.html                 # the presentation (lang="he" dir="rtl"), 11 slides
+launch.bat                 # Windows one-click launcher (runs scripts/serve.py)
+scripts/                   # build.mjs (standalone + Pages site) · serve.py (local server)
+.github/workflows/         # pages.yml (test, build, deploy to GitHub Pages)
+dist/                      # GENERATED by npm run build (not committed)
 src/
   css/                     # tokens.css · base.css · deck.css · components.css
   js/
