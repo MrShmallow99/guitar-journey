@@ -9,8 +9,8 @@ export const PRESETS = {
   full:      { anchor: 'center',    offset: [-2, -6, 66], fov: 32 },
   neck:      { anchor: 'fret1',     offset: [2, -9, 22], fov: 32 },
   fret12:    { anchor: 'fret12',    offset: [-4, -10, 27], fov: 32 },
-  pickups:   { anchor: 'pickups',   offset: [-1, -9, 19], fov: 32 },
+  pickups:   { anchor: 'pickups',   offset: [-2, -10, 27], fov: 32 },
   neckView:  { anchor: 'neck',      offset: [0, -7, 30], fov: 32 },
-  headstock: { anchor: 'headstock', offset: [-4, -6, 14], fov: 32 },
+  headstock: { anchor: 'headstock', offset: [-5, -7, 19], fov: 32 },
   closing:   { anchor: 'center',    offset: [10, 16, 64], fov: 32 },
 };

@@ -1,13 +1,19 @@
-// The persistent 3D stage behind the slides. It owns the renderer, camera,
-// lights, controls and render loop, and is model-agnostic: it only uses the
-// model contract { object, anchors, dispose }.
+// The persistent 3D stage. It owns the renderer, camera, lights, controls
+// and render loop, and is model-agnostic: it only uses the model contract
+// { object, anchors, dispose }.
+//
+// Two layouts:
+//  - fullscreen (desktop): a fixed canvas behind the slides; the guitar is
+//    shifted away from the text column with a view offset.
+//  - inline (small screens): the canvas is moved into an in-flow viewer box
+//    on the slide, so it can never cover text or controls.
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { PRESETS } from './presets.js';
 
-const TWEEN_MS = 1400;
+const TWEEN_MS = 1500;
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
 export function webglAvailable() {
@@ -22,9 +28,10 @@ export function webglAvailable() {
 export class GuitarStage {
   constructor(canvas, model) {
     this.canvas = canvas;
+    this.home = { parent: canvas.parentNode, next: canvas.nextSibling };
+    this.container = null;
     this.model = model;
     this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    this.narrow = matchMedia('(max-width: 900px), (max-height: 560px)');
     this.mode = 'side';
     this.presetName = 'hero';
     this.spinAmount = 1;
@@ -35,21 +42,24 @@ export class GuitarStage {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    renderer.toneMappingExposure = 1.0;
     this.renderer = renderer;
 
     const scene = new THREE.Scene();
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
     pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xffe6c8, 0x1a0f0c, 0.35));
-    const key = new THREE.DirectionalLight(0xffd6a0, 2.4);
-    key.position.set(30, 40, 60);
-    const rim = new THREE.DirectionalLight(0x9db8ff, 1.4);
-    rim.position.set(-40, -10, -30);
-    const glow = new THREE.PointLight(0xe3a43b, 300, 120, 2);
-    glow.position.set(-20, -10, 30);
-    scene.add(key, rim, glow);
+    // warm key, cool rim, soft amber kicker: a "late-night studio" look
+    scene.add(new THREE.HemisphereLight(0xfff0dc, 0x1a0f0c, 0.3));
+    const key = new THREE.DirectionalLight(0xffdcaa, 1.9);
+    key.position.set(25, 35, 55);
+    const fill = new THREE.DirectionalLight(0xffe9d2, 0.6);
+    fill.position.set(-30, 10, 40);
+    const rim = new THREE.DirectionalLight(0xa9c1ff, 1.6);
+    rim.position.set(-35, -25, -30);
+    const glow = new THREE.PointLight(0xe3a43b, 260, 140, 2);
+    glow.position.set(-18, -12, 26);
+    scene.add(key, fill, rim, glow);
     this.scene = scene;
 
     // layout: neck pointing up and away from the text column
@@ -67,32 +77,46 @@ export class GuitarStage {
     this.controls.enableDamping = true;
     this.controls.enablePan = false;
     this.controls.minDistance = 8;
-    this.controls.maxDistance = 90;
+    this.controls.maxDistance = 95;
     this.controls.autoRotateSpeed = 1.2;
     this.controls.addEventListener('start', () => { this.tween = null; });
 
+    this.resizeObserver = new ResizeObserver(() => this.#resize());
     this.#placeCamera(this.#presetPose('hero'));
     this.#resize();
     window.addEventListener('resize', () => this.#resize());
     renderer.setAnimationLoop(() => this.#frame());
   }
 
-  /** Called on every slide change. mode: side | dim | interactive | off */
-  setSlide(presetName, mode) {
+  get inline() { return this.container !== null; }
+
+  /**
+   * Called on every slide change.
+   * @param {string} presetName
+   * @param {'side'|'dim'|'interactive'|'off'} mode
+   * @param {HTMLElement|null} container  inline viewer box, or null for fullscreen
+   */
+  setSlide(presetName, mode, container = null) {
+    this.#attach(container);
     this.mode = mode;
     this.controls.enabled = mode === 'interactive';
     if (mode !== 'interactive') this.setAutoRotate(false);
-    if (mode !== 'off') this.goTo(presetName);
+    if (mode !== 'off') this.goTo(presetName, { instant: this.justAttached });
+    this.justAttached = false;
   }
 
-  goTo(presetName) {
+  goTo(presetName, { instant = false } = {}) {
     if (!PRESETS[presetName]) return;
     this.presetName = presetName;
     const to = this.#presetPose(presetName);
-    if (this.reducedMotion.matches) { this.#placeCamera(to); return; }
+    if (instant || this.reducedMotion.matches) { this.#placeCamera(to); return; }
+    const fromOff = this.camera.position.clone().sub(this.controls.target);
+    const toOff = to.pos.clone().sub(to.target);
     this.tween = {
-      from: { pos: this.camera.position.clone(), target: this.controls.target.clone(), off: { ...this.offset }, fov: this.camera.fov },
-      to,
+      from: { target: this.controls.target.clone(), dir: fromOff.clone().normalize(), dist: fromOff.length(), off: { ...this.offset }, fov: this.camera.fov },
+      to: { target: to.target, dist: toOff.length(), off: to.off, fov: to.fov },
+      // rotate the viewing direction along the shortest arc instead of cutting through the model
+      arc: new THREE.Quaternion().setFromUnitVectors(fromOff.normalize(), toOff.normalize()),
       t0: performance.now(),
     };
   }
@@ -101,18 +125,33 @@ export class GuitarStage {
     this.controls.autoRotate = on;
   }
 
+  #attach(container) {
+    if (container === this.container) return;
+    if (this.container) this.resizeObserver.unobserve(this.container);
+    this.container = container;
+    if (container) {
+      container.append(this.canvas);
+      this.canvas.classList.add('scene--inline');
+      this.resizeObserver.observe(container);
+    } else {
+      this.home.parent.insertBefore(this.canvas, this.home.next);
+      this.canvas.classList.remove('scene--inline');
+    }
+    this.justAttached = true;
+    this.#resize();
+  }
+
   #layoutOffset() {
-    if (this.mode === 'dim') return { x: 0, y: 0 };
-    if (this.narrow.matches) return { x: 0, y: this.mode === 'interactive' ? 0.24 : 0 };
+    if (this.inline || this.mode === 'dim') return { x: 0, y: 0 };
     return { x: this.mode === 'interactive' ? 0.2 : 0.22, y: 0 };
   }
 
   #presetPose(name) {
     const p = PRESETS[name];
-    const anchor = this.model.anchors[p.anchor];
-    const local = anchor.position.clone();
+    const local = this.model.anchors[p.anchor].position.clone();
     const target = this.layout.localToWorld(local.clone());
-    const pos = this.layout.localToWorld(local.add(new THREE.Vector3(...p.offset)));
+    const offset = new THREE.Vector3(...p.offset).multiplyScalar(this.inline ? p.inlineZoom ?? 1 : 1);
+    const pos = this.layout.localToWorld(local.add(offset));
     return { pos, target, off: this.#layoutOffset(), fov: p.fov };
   }
 
@@ -126,9 +165,13 @@ export class GuitarStage {
     this.camera.lookAt(target);
   }
 
+  #size() {
+    if (this.inline) return { w: this.container.clientWidth || 1, h: this.container.clientHeight || 1 };
+    return { w: window.innerWidth, h: window.innerHeight };
+  }
+
   #applyViewOffset() {
-    const w = this.canvas.clientWidth || window.innerWidth;
-    const h = this.canvas.clientHeight || window.innerHeight;
+    const { w, h } = this.#size();
     this.camera.aspect = w / h;
     // Shifting the rendered window moves the guitar away from the text column.
     this.camera.setViewOffset(w, h, this.offset.x * w, this.offset.y * h, w, h);
@@ -136,7 +179,7 @@ export class GuitarStage {
   }
 
   #resize() {
-    const w = window.innerWidth, h = window.innerHeight;
+    const { w, h } = this.#size();
     this.renderer.setSize(w, h, false);
     if (this.tween) return;
     this.offset = this.#layoutOffset();
@@ -151,9 +194,10 @@ export class GuitarStage {
     if (this.tween) {
       const k = Math.min(1, (performance.now() - this.tween.t0) / TWEEN_MS);
       const e = ease(k);
-      const { from, to } = this.tween;
-      this.camera.position.lerpVectors(from.pos, to.pos, e);
+      const { from, to, arc } = this.tween;
+      const dir = from.dir.clone().applyQuaternion(new THREE.Quaternion().slerp(arc, e));
       this.controls.target.lerpVectors(from.target, to.target, e);
+      this.camera.position.copy(this.controls.target).addScaledVector(dir, from.dist + (to.dist - from.dist) * e);
       this.camera.fov = from.fov + (to.fov - from.fov) * e;
       this.offset = { x: from.off.x + (to.off.x - from.off.x) * e, y: from.off.y + (to.off.y - from.off.y) * e };
       this.#applyViewOffset();
