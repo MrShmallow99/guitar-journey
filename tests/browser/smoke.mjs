@@ -1,22 +1,46 @@
-// Browser smoke test: serves the repo, drives the presentation in headless
-// Chrome/Edge, checks navigation, the Python-powered fretboard, the radar ->
+// Browser smoke test: drives the presentation in headless Chrome/Edge,
+// checks navigation, the Python-powered fretboard, the radar ->
 // planner/summary state and the 3D scene, and saves screenshots.
+// The same checks run against three targets:
 //
-//   npm install            (installs puppeteer-core only; uses your installed Chrome)
-//   npm run test:browser   [-- --screenshots]
+//   npm run test:browser      source project, served at http://127.0.0.1:8765/
+//   npm run test:standalone   dist/presentation.html opened as a file:// URL,
+//                             with the browser's network emulated offline
+//   npm run test:pages        dist/site served under a repository subpath
+//                             (http://127.0.0.1:8766/guitar-journey/), like GitHub Pages
+//   add -- --screenshots to refresh docs/screenshots/ (source mode)
 //
 // Set CHROME_PATH if Chrome/Edge is not in a standard location.
 
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer-core';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const PORT = 8765;
-const URL = `http://127.0.0.1:${PORT}/`;
-const SHOTS = process.argv.includes('--screenshots');
+const MODE = process.argv.includes('--standalone') ? 'standalone' : process.argv.includes('--pages') ? 'pages' : 'source';
+const SHOTS = process.argv.includes('--screenshots') && MODE === 'source';
+const PAGES_BASE = 'guitar-journey';
+
+let serveDir = ROOT, PORT = 8765, URL, tempRoot = null;
+if (MODE === 'standalone') {
+  const file = join(ROOT, 'dist/presentation.html');
+  if (!existsSync(file)) throw new Error('dist/presentation.html not found: run npm run build first');
+  URL = pathToFileURL(file).href;
+} else if (MODE === 'pages') {
+  if (!existsSync(join(ROOT, 'dist/site/index.html'))) throw new Error('dist/site not found: run npm run build first');
+  // simulate https://<user>.github.io/<repository>/ with a subdirectory
+  tempRoot = mkdtempSync(join(tmpdir(), 'gj-pages-'));
+  cpSync(join(ROOT, 'dist/site'), join(tempRoot, PAGES_BASE), { recursive: true });
+  serveDir = tempRoot;
+  PORT = 8766;
+  URL = `http://127.0.0.1:${PORT}/${PAGES_BASE}/`;
+} else {
+  URL = `http://127.0.0.1:${PORT}/`;
+}
+console.log(`mode: ${MODE} · ${URL}`);
 
 const CANDIDATES = [
   process.env.CHROME_PATH,
@@ -34,13 +58,14 @@ function check(name, ok, info = '') {
 }
 
 const python = process.platform === 'win32' ? 'python' : 'python3';
-const server = spawn(python, ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1'], { cwd: ROOT, stdio: 'ignore' });
+const server = MODE === 'standalone' ? null : spawn(python, ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1'], { cwd: serveDir, stdio: 'ignore' });
 const executablePath = CANDIDATES.find((p) => existsSync(p));
 if (!executablePath) throw new Error('No Chrome/Edge found; set CHROME_PATH');
 
 let browser;
+const requested = [];
 try {
-  await waitForServer();
+  if (server) await waitForServer();
   // Hardware GPU where available (Windows/D3D11); software WebGL elsewhere or with SOFTWARE_GL=1.
   const gpuArgs = process.platform === 'win32' && !process.env.SOFTWARE_GL
     ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']
@@ -53,6 +78,9 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); });
   page.on('requestfailed', (r) => errors.push(`requestfailed: ${r.url()}`));
   page.on('response', (r) => { if (r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`); });
+  page.on('request', (r) => requested.push(r.url()));
+  // standalone: prove nothing needs the network
+  if (MODE === 'standalone') await page.setOfflineMode(true);
 
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.waitForSelector('html[data-ready="true"]', { timeout: 20000 });
@@ -201,10 +229,22 @@ try {
   info = await planInfo();
   check('changing a rating changes the plan (ear 1 -> 5 moves the improv focus to the fretboard)', info.kinds.some((k) => k.includes('מיקוד') && k.includes('הצוואר')), info.kinds.join(' | '));
   const ctx = browser.defaultBrowserContext();
-  await ctx.overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  let clipAccess = true;
+  try {
+    await ctx.overridePermissions(new globalThis.URL(URL).origin, ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  } catch { clipAccess = false; /* file:// has no grantable origin */ }
   await page.click('#planner-copy');
-  const clip = await page.evaluate(() => navigator.clipboard.readText());
-  check('copy button puts a readable plan on the clipboard', clip.includes('30 דקות') && clip.includes('✓') && clip.includes('לא תוכנית מדעית'), clip.split('\n')[0]);
+  await page.waitForFunction(() => /הועתקה|נכשלה/.test(document.getElementById('planner-status').textContent), { timeout: 5000 }).catch(() => {});
+  const copied = await page.evaluate(async () => ({
+    status: document.getElementById('planner-status').textContent,
+    text: await navigator.clipboard.readText().catch(() => null),
+  }));
+  if (copied.text !== null) {
+    check('copy button puts a readable plan on the clipboard', copied.text.includes('30 דקות') && copied.text.includes('✓') && copied.text.includes('לא תוכנית מדעית'), copied.text.split('\n')[0]);
+  } else {
+    // clipboard can't be read back here (e.g. file://): rely on the page's own copy result
+    check('copy button reports a successful copy (clipboard not readable in this context)', copied.status.includes('הועתקה'), `${copied.status} · permission override ${clipAccess ? 'ok' : 'unavailable'}`);
+  }
   await page.focus('input[name="planner-goal"]:checked');
   await page.keyboard.press('ArrowLeft');
   const kb = await page.evaluate(() => ({ hash: location.hash, goal: document.querySelector('input[name="planner-goal"]:checked').value }));
@@ -367,9 +407,23 @@ try {
   }
 
   check('no console errors, page errors or failed requests', errors.length === 0, errors.join(' | '));
+  if (MODE === 'standalone') {
+    const external = [...new Set(requested.filter((u) => !u.startsWith('file:') && !u.startsWith('data:')))];
+    const files = [...new Set(requested.filter((u) => u.startsWith('file:')).map((u) => u.split('#')[0]))];
+    check('standalone: no network requests, and the only file loaded is presentation.html', external.length === 0 && files.length === 1 && files[0].endsWith('/presentation.html'), `external: ${external.length}, files: ${files.map((f) => f.split('/').pop()).join(', ')}`);
+  }
+  if (MODE === 'pages') {
+    const outside = [...new Set(requested.filter((u) => u.startsWith('http') && !u.startsWith(URL)))];
+    check(`pages: every request stays under /${PAGES_BASE}/`, outside.length === 0, outside.join(' | '));
+  }
 } finally {
   await browser?.close();
-  server.kill();
+  if (server) {
+    const exited = new Promise((r) => server.once('exit', r));
+    server.kill();
+    await exited; // the server holds a handle on its directory until it exits (Windows)
+  }
+  if (tempRoot) rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 }
 
 const failed = results.filter((r) => !r.ok).length;
