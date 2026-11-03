@@ -46,9 +46,6 @@ export class GuitarStage {
     this.renderer = renderer;
 
     const scene = new THREE.Scene();
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
-    pmrem.dispose();
     // warm key, cool rim, soft amber kicker: a "late-night studio" look
     scene.add(new THREE.HemisphereLight(0xfff0dc, 0x1a0f0c, 0.3));
     const key = new THREE.DirectionalLight(0xffdcaa, 1.9);
@@ -85,7 +82,23 @@ export class GuitarStage {
     this.#placeCamera(this.#presetPose('hero'));
     this.#resize();
     window.addEventListener('resize', () => this.#resize());
-    renderer.setAnimationLoop(() => this.#frame());
+    this.ready = this.#init();
+  }
+
+  // Heavy GPU setup, split into separate tasks so the page stays responsive:
+  // environment map, then shader compilation (parallel where supported),
+  // then the render loop. Done synchronously, this blocked for ~0.5 s.
+  async #init() {
+    const nextTask = () => new Promise((resolve) => setTimeout(resolve));
+    await nextTask();
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(this.renderer), 0.04).texture;
+    pmrem.dispose();
+    await nextTask();
+    try {
+      await this.renderer.compileAsync(this.scene, this.camera);
+    } catch { /* fall back to compiling on first render */ }
+    this.renderer.setAnimationLoop(() => this.#frame());
   }
 
   get inline() { return this.container !== null; }

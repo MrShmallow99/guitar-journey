@@ -84,6 +84,8 @@ body.no-webgl .scene { display: none; }
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
+  /* content scrolled under the (translucent) bars fades out instead of showing through */
+  mask-image: linear-gradient(to bottom, transparent calc(var(--topbar-h) - 6px), #000 calc(var(--topbar-h) + 10px), #000 calc(100% - var(--navbar-h) - 10px), transparent calc(100% - var(--navbar-h) + 6px));
   opacity: 0;
   visibility: hidden;
   transform: translateX(var(--enter-x, 0));
@@ -201,18 +203,31 @@ body.no-webgl .scene { display: none; }
 .navbar__btn:disabled { opacity: 0.3; cursor: default; }
 
 .navbar__dots { display: flex; align-items: center; gap: 0.35rem; }
+/* 24px hit area (WCAG 2.2 target size); the visible pill is drawn inside */
+.navbar__dots { gap: 0; }
 .navbar__dots button {
-  width: 0.62rem;
-  height: 0.62rem;
+  position: relative;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: 0;
+  background: none;
+  cursor: pointer;
+  transition: width 300ms var(--ease);
+}
+.navbar__dots button::before {
+  content: "";
+  position: absolute;
+  inset: 50% 6px auto;
+  height: 0.62rem;
+  translate: 0 -50%;
   border-radius: 999px;
   background: var(--line-strong);
-  cursor: pointer;
-  transition: width 300ms var(--ease), background 300ms;
+  transition: background 300ms;
 }
-.navbar__dots button:hover { background: var(--text-muted); }
-.navbar__dots button[aria-current="step"] { width: 1.8rem; background: var(--accent); }
+.navbar__dots button:hover::before { background: var(--text-muted); }
+.navbar__dots button[aria-current="step"] { width: 2.6rem; }
+.navbar__dots button[aria-current="step"]::before { background: var(--accent); }
 .navbar__dots .dot-gap { width: 0.5rem; }
 
 .progress {
