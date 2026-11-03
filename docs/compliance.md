@@ -49,4 +49,4 @@ If the course staff confirm that runtime Python is required, the least intrusive
 
 - **"About 10 slides":** the deck has 11. This was an owner decision, and slide 11 is the summary and resources slide.
 - **Repository licence:** not chosen yet (PRD open question 5). Third-party licences (Three.js MIT, fonts OFL) are included.
-- **GitHub Pages:** the workflow is ready, but **the deployment has not run yet**. Verify the URL once it has.
+- **GitHub Pages:** deployed by GitHub Actions and verified live at https://mrshmallow99.github.io/guitar-journey/ (iteration 007). Repository: https://github.com/MrShmallow99/guitar-journey

@@ -327,3 +327,48 @@ Earlier iteration entries were left as written, because they record what was tru
 - **Compliance uncertainty:** whether build-time Python satisfies "Python integration" as the course intends (see `docs/compliance.md`)
 - **Owner decisions still open:** the repository licence, and confirming the RTL arrow-key convention (PRD D7)
 - **Not tested:** Safari, real devices, screen readers. Lighthouse Performance is still below the internal target; that's not an assignment requirement.
+
+---
+
+## Iteration 007: Publication and live verification (2026-11-03)
+
+**Prompt:** [`prompts/007-publish-and-verify.md`](prompts/007-publish-and-verify.md), plus the owner's follow-up instructions in the same session: the privacy rewrite of commit identities, then explicit authorisation to publish.
+
+### Privacy correction before publishing (owner-authorised history rewrite)
+
+- **Why:** the owner explicitly authorised rewriting the local history, **only** to replace their personal email in the commit metadata. Nothing had been pushed yet.
+- **Address used:** GitHub's ID-based noreply address `110254531+MrShmallow99@users.noreply.github.com`. The ID came from the GitHub API (`gh api user`).
+- **Method:** `git filter-branch --env-filter`, changing author and committer emails that matched the old address, and nothing else.
+- **What was verified unchanged:** all 26 commits, still separate and in order; full messages, including the `Co-Authored-By` trailers; author and committer dates; names; every commit's tree; the linear structure. Only the commit hashes changed.
+- **Audit:** 0 occurrences of the personal address (or its local part) in any commit metadata, message or historical file version, or in any of the 330 stored objects. The backup refs and reflog were removed, and the temporary backup bundle was deleted at the owner's request.
+- **Future commits:** identity set in this repository's local Git config only; the global config is untouched.
+
+### Publication
+
+| Step | Result |
+|---|---|
+| GitHub Pages enabled through the API (`build_type: workflow`) | ✅ `https://mrshmallow99.github.io/guitar-journey/`, HTTPS enforced |
+| Remote `origin` added; `main` pushed | ✅ The remote `main` matched the local HEAD |
+| Attribution on GitHub (commits API) | ✅ 26/26 commits: author and committer login **MrShmallow99**, email = noreply; personal address 0 times |
+| First workflow run (push) | ✅ `success`: build (checkout, Python 3.12, pytest **27 passed**, data `--check` OK, `npm ci`, unit tests **14/14**, build, configure-pages, upload artifact of 707 KB) and deploy. No annotations or warnings. |
+
+### Live verification
+
+| Check | Result |
+|---|---|
+| Key URLs (`/`, `src/js/main.js`, `src/data/fretboard.json`, the three.js build, fonts, `presentation.html`, `#/7`) | All HTTP 200, with correct MIME types (`text/html`, `application/javascript`, `application/json`, `font/woff2`) |
+| **Full browser suite against the live URL** (a temporary copy of `smoke.mjs` pointed at the site, not committed) | **58/58**: navigation, keys, deep links; Three.js (renders, 22 frets from the Python data, slide 8 controls); fretboard against the generated data and hash; radar → roadmap → planner → summary and persistence; planner durations, goals, copy, keyboard, reset; mobile layouts; no console errors; every request stays under `/guitar-journey/` |
+| **Standalone file downloaded from the live site**, opened from `file://` with networking disabled | **58/58**; zero network requests (CI build `b7668c613cea`) |
+| Visual check of live slide 8, desktop and mobile | Same rendering as local |
+| README on GitHub (rendered HTML through the API, plus a page screenshot) | Renders fully (16 headings, 9 tables). **All 12 screenshots load** (HTTP 200, none broken in the page). All relative doc links resolve (the folder links redirect `blob` → `tree`). The repository page shows 26 commits. |
+
+### Documentation updated after deployment
+
+The live URL was added to the README (top of the page and the Pages section). Statements saying the deployment hadn't run yet were corrected in the README, the PRD (P6, F31) and `docs/compliance.md`. This entry was added. All of it is in one commit after the publication push.
+
+### Remaining issues
+
+- **Owner decisions still open:** the repository licence, and the RTL arrow-key convention (D7)
+- **Compliance interpretation:** build-time Python vs. runtime Python (`docs/compliance.md`)
+- **Not tested:** Safari, real phones and tablets, screen readers. Lighthouse Performance is still below the internal target of 85.
+- **Not in CI:** browser tests run locally only. CI runs the Python tests, the data check, the unit tests and the build.

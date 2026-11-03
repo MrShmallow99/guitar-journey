@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Document status** | v0.6, updated after iteration 006: release-readiness review. Status columns reflect the current implementation. |
+| **Document status** | v0.7, updated after iteration 007: published to GitHub and deployed to GitHub Pages. Status columns reflect the current implementation. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
 
@@ -173,7 +173,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | F25 | Copy the plan as readable text | S | ✅ |
 | F26 | Slide 7 "How this works": build-time Python → JSON → JavaScript in the browser | S | ✅ |
 | F30 | **Standalone HTML** `dist/presentation.html`: one self-contained file that works from `file://`, offline, with full functionality | M | ✅ (Chrome, Edge: full suite; Firefox: focused check) |
-| F31 | **GitHub Pages:** relative paths only; a reproducible build (`npm run build` → `dist/site`); a deployment workflow | M | ✅ (tested under a simulated subpath; the workflow hasn't run on GitHub yet) |
+| F31 | **GitHub Pages:** relative paths only; a reproducible build (`npm run build` → `dist/site`); a deployment workflow | M | ✅ Live at https://mrshmallow99.github.io/guitar-journey/; full browser suite 58/58 against the live URL (iteration 007) |
 | F32 | **Windows launcher** `launch.bat`: Python detection, server start, browser open, duplicate reuse, busy-port fallback, clear errors and shutdown | S | ✅ (run on Windows; Ctrl+C path manual) |
 
 ### 5.3 Deferred features (later iterations)
@@ -200,7 +200,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | P3 | Deterministic output with a SHA-256 content hash; `--check` mode detects stale committed data | M | ✅ |
 | P4 | A `pytest` suite verifies the output against known reference positions and theory invariants | M | ✅ (27 tests) |
 | P5 | YAML content pipeline with schema validation; Hebrew/BiDi/glossary lint | S | – |
-| P6 | CI (GitHub Actions) runs the tests and `--check` | S | ◐ `.github/workflows/pages.yml` runs pytest, `--check`, the planner unit tests and the build before deploying. Every step was replayed on Ubuntu (Node 22, Python 3.12); **not yet run on GitHub**. Browser tests are local only. |
+| P6 | CI (GitHub Actions) runs the tests and `--check` | S | ✅ `.github/workflows/pages.yml` runs pytest, `--check`, the planner unit tests and the build before deploying. The first GitHub run succeeded (iteration 007). Browser tests are local only. |
 
 **The Python-to-presentation link must be verifiable** (see PLANNING §4, "Decision"). The fretboard contains no built-in music data. The provenance badge displays the hash of the generated data. The 3D frets are placed from the generated fret positions.
 

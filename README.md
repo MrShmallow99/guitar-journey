@@ -2,9 +2,11 @@
 
 An interactive, 11-slide **Hebrew (RTL)** presentation about learning electric guitar and progressing over time. Its central idea: *guitar progress is a map, not a ladder.* Skills develop at different rates, so the deck lets viewers map their own profile and carries it through the whole presentation.
 
+**▶ Live presentation: [https://mrshmallow99.github.io/guitar-journey/](https://mrshmallow99.github.io/guitar-journey/)** · offline single file: [presentation.html](https://mrshmallow99.github.io/guitar-journey/presentation.html)
+
 It uses HTML/CSS/vanilla JS, **Three.js** for a 3D guitar inspired by Jimmy Page's Les Paul "Number One", and **Python** for a data engine that generates all the music-theory data shown on the interactive fretboard.
 
-> **Status: iteration 006 (release-readiness review).** Earlier: 005 (distribution: GitHub Pages, standalone HTML, Windows launcher) and 004 (practice planner and cross-slide coherence). The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
+> **Status: published (iteration 007).** Deployed to GitHub Pages by GitHub Actions. Earlier: 006 (release-readiness review), 005 (distribution: GitHub Pages, standalone HTML, Windows launcher) and 004 (practice planner and cross-slide coherence). The deck is complete and usable on desktop and mobile. Viewers rate themselves (slide 2), explore the map (slide 3), learn the skills (slides 4–9), build a personal practice session (slide 10) and get a personal summary (slide 11). The historical and resource claims are checked against linked sources ([`docs/content-sources.md`](docs/content-sources.md)). See [Limitations](#limitations).
 
 ![Opening slide](docs/screenshots/slide-01.png)
 
@@ -47,13 +49,13 @@ The workflow in `.github/workflows/pages.yml` runs the Python tests, the data fr
 2. Push to `main`, or run the workflow manually under **Actions → Deploy to GitHub Pages → Run workflow**.
 3. The deployed URL appears in the workflow summary, and under Settings → Pages.
 
-**URL structure** (for example, user `itamar`, repository `guitar-journey`):
+**Live URLs** (repository [`MrShmallow99/guitar-journey`](https://github.com/MrShmallow99/guitar-journey)):
 
 | URL | What it is |
 |---|---|
-| `https://itamar.github.io/guitar-journey/` | The presentation (`index.html`) |
-| `https://itamar.github.io/guitar-journey/#/7` | Deep link to slide 7 (any `#/1` … `#/11`) |
-| `https://itamar.github.io/guitar-journey/presentation.html` | The standalone single-file version, for downloading or offline use |
+| [`https://mrshmallow99.github.io/guitar-journey/`](https://mrshmallow99.github.io/guitar-journey/) | The presentation (`index.html`) |
+| [`https://mrshmallow99.github.io/guitar-journey/#/7`](https://mrshmallow99.github.io/guitar-journey/#/7) | Deep link to slide 7 (any `#/1` … `#/11`) |
+| [`https://mrshmallow99.github.io/guitar-journey/presentation.html`](https://mrshmallow99.github.io/guitar-journey/presentation.html) | The standalone single-file version, for downloading or offline use |
 | `…/src/…`, `…/assets/…` | Scripts, styles, the generated data and fonts |
 
 Every path in the project is relative, so the site works under any repository subpath. This is tested by serving `dist/site` under `/guitar-journey/` (`npm run test:pages`).
@@ -298,7 +300,7 @@ Details: [`docs/architecture.md`](docs/architecture.md).
   - **Not tested:** Safari, real phones and tablets (mobile layouts were checked in emulation at 390×844), and screen readers.
 - **Frame rate:** about 60 fps on an integrated Intel GPU; only 2–4 fps with software WebGL (machines without GPU acceleration).
 - **Lighthouse (desktop, iteration 004):** Accessibility 100 and Best Practices 100. **Performance 75–79**, below the internal target of 85. The cause is synchronous WebGL setup (the environment map and shader linking), about 0.4–0.5 s of blocking time after the first paint. The accessibility score is automated only; there has been no manual screen-reader review.
-- **CI / GitHub Pages:** `.github/workflows/pages.yml` exists, and every one of its build steps was replayed successfully on Ubuntu with Node 22 and Python 3.12. **It has not yet run on GitHub, so the deployment itself is unverified.**
+- **CI / GitHub Pages:** `.github/workflows/pages.yml` runs on every push to `main`. The first run (2026-11-03) passed all steps and deployed the site. The full browser suite was then run against the live URL (58/58). The browser tests themselves run locally, not in CI.
 - **Deferred (by decision):** metronome, audio synthesis, 3D hotspots, YAML content pipeline.
 
 ## Third-party licences
