@@ -259,3 +259,71 @@ Scope: improve the existing experience. No unrelated features were added. The 11
 - **Standalone `localStorage` behaviour varies by browser.** Chrome and Edge share `file://` storage across local files; Firefox scopes it per file. It is guarded everywhere.
 - **The standalone file is a snapshot.** Rebuild after changing the source.
 - **During launcher testing, a `python -m http.server 8000` process that wasn't started by these tests (PID 2404) was stopped** while cleaning up port 8000. If you had a server running, restart it.
+
+---
+
+## Iteration 006: Release-readiness review (2026-11-03)
+
+**Prompt:** [`prompts/006-release-readiness.md`](prompts/006-release-readiness.md). A maintenance and compliance pass; the presentation itself was not changed.
+
+### Commits
+
+1. `Record prompt 006 verbatim`
+2. `Fix test:unit on Linux: pass the test file explicitly`
+3. `Workflow: update actions to current majors`
+4. `Docs: correct outdated and contradictory statements`
+5. `Add assignment compliance checklist`
+6. This log entry
+
+### Findings and fixes
+
+| # | Finding | How it was confirmed | Fix |
+|---|---|---|---|
+| 1 | **`npm run test:unit` fails on Linux:** `Cannot find module '/…/tests/js'`. The Pages workflow would have stopped at this step. | Reproduced *before* fixing, with the npm script itself, in a fresh clone on Ubuntu (WSL) with Node 22.23.4 / npm 10.9.9 | The script is now `node --test tests/js/planner.test.mjs`. Verified with the npm command on Linux (TAP output: 14 tests, 14 pass) and on Windows (14/14). |
+| 2 | Workflow actions pinned to old majors (checkout v4, setup-python v5, setup-node v4, configure-pages v5, upload-pages-artifact v3, deploy-pages v4), which run on the retiring Node 20 actions runtime | GitHub API: all pinned tags exist; their latest releases are v7, v7, v7, v6, v5 and v5 | Upgraded to the current majors after reading the release notes. The only relevant behaviour change: `upload-pages-artifact` ≥ v4 excludes dotfiles, so `.nojekyll` isn't uploaded. That's harmless, because Actions deployments don't run Jekyll; it's documented in the workflow. |
+| 3 | README: "Not yet run: Lighthouse" next to the Lighthouse results; "Deferred: … CI" although the workflow exists; "Automated testing ran in headless Chrome on Windows only. Firefox … untested" despite the Edge and Firefox runs; `npm install # puppeteer-core only` although esbuild is also installed; no Python 3.11 note | Document review | Rewritten to match the actual coverage, keeping the real limitations (Safari, real devices, screen readers, the remote workflow run) |
+| 4 | PRD: P6 (CI) still "–"; the Browsers row said "tested in headless Chrome only"; **duplicate IDs** (the deferred table's F20–F27 collided with the implemented F20–F26) | Document review | P6 marked ◐ with an accurate description; Browsers row updated; deferred features renumbered X1–X8, with a note |
+| 5 | PLANNING still described the original plan as if it were current (`ci.yml`; "routine builder later"; the slide 10 static session) | Document review | A banner marking it as the planning record, plus inline "superseded" annotations. The historical content was kept. |
+| 6 | architecture.md: "no build step", although `npm run build` now exists | Document review | Clarified: the source runs without a build step; the build is only for distribution |
+| 7 | No single place mapped the assignment requirements to evidence | — | New `docs/compliance.md`, including the Python interpretation uncertainty |
+
+Earlier iteration entries were left as written, because they record what was true at the time.
+
+### Repository quality checks (all run)
+
+| Check | Result |
+|---|---|
+| Tracked caches, venvs, `node_modules`, `dist`, logs, temp files | None (`git ls-files` scan) |
+| README image references | 12 images, all present |
+| README links to local docs | All present |
+| Hardcoded local paths in tracked files (excluding the verbatim prompts) | None |
+| `npm run …` commands referenced in the docs | All 8 exist in `package.json` |
+| Relative URLs under a repository subpath | 33 URLs fetched from `dist/site` served at `/guitar-journey/` on Ubuntu: 0 non-200 responses, 0 absolute paths |
+| Pages artifact | `dist/site`: 36 files, 2.2 MB, no symlinks or hard links; contains `index.html` and `presentation.html` |
+
+### Workflow validation: what is and isn't proven
+
+| Workflow step | Validated locally? |
+|---|---|
+| checkout | ✅ fresh `git clone` of the committed state |
+| setup-python 3.12 + pytest + `--check` | ✅ Python 3.12.16 on Ubuntu: 27 passed; data up to date |
+| setup-node 22 + `npm ci` | ✅ Node 22.23.4: 86 packages, lockfile in sync, esbuild's Linux binary installed |
+| `npm run test:unit` | ✅ 14/14 |
+| `npm run build` | ✅ `dist/presentation.html` (936 KB with LF checkouts) and `dist/site` |
+| configure-pages, upload-pages-artifact, deploy-pages | ❌ **Need a real GitHub run.** They depend on GitHub's Pages API and OIDC token, and Pages must first be set to "GitHub Actions". The inputs were checked against the action docs and release notes only. |
+
+### Final test results (this iteration)
+
+| Command | Platform | Result |
+|---|---|---|
+| `python -m pytest` / `python -m guitarlab.build --check` | Windows (3.14) and Ubuntu (3.12) | 27 passed / up to date on both |
+| `npm run test:unit` | Windows (Node 26) and Ubuntu (Node 22) | 14/14 on both |
+| `npm run test:browser` | Windows, headless Chrome | 57/57 |
+| `npm run test:dist` (build + standalone + Pages) | Windows, headless Chrome | build OK, standalone 58/58 (0 network requests), Pages 58/58 |
+
+### Remaining items
+
+- **The GitHub Pages deployment hasn't been run or checked on GitHub.**
+- **Compliance uncertainty:** whether build-time Python satisfies "Python integration" as the course intends (see `docs/compliance.md`)
+- **Owner decisions still open:** the repository licence, and confirming the RTL arrow-key convention (PRD D7)
+- **Not tested:** Safari, real devices, screen readers. Lighthouse Performance is still below the internal target; that's not an assignment requirement.
