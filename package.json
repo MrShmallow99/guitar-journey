@@ -6,7 +6,8 @@
   "scripts": {
     "serve": "python -m http.server 8000",
     "test:browser": "node tests/browser/smoke.mjs",
-    "screenshots": "node tests/browser/smoke.mjs --screenshots"
+    "screenshots": "node tests/browser/smoke.mjs --screenshots",
+    "test:unit": "node --test tests/js/"
   },
   "devDependencies": {
     "puppeteer-core": "23.11.1"
