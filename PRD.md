@@ -2,9 +2,17 @@
 
 | | |
 |---|---|
-| **Document status** | v0.2, revised after owner review (iteration 002). Status columns updated after the iteration 002 prototype. |
+| **Document status** | v0.3, updated after iteration 003: quality and content review. Status columns reflect the current implementation. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
+
+**Changes in v0.3 (iteration 003)**
+
+- Detailed procedural 3D model (F14).
+- New slide 3 "over time" view (F18).
+- Mobile layout requirements (F19–F21).
+- Content verified against sources (C3, C4).
+- D5 refined and D11–D12 added.
 
 **Changes from v0.1**
 
@@ -70,7 +78,7 @@ The skill radar from slide 2 is the spine of the deck. Its skills appear as chip
 |---|---|---|
 | 1 | Opening | Thesis ("a map, not a ladder"); the three acts |
 | 2 | Skill map | 8 skill dimensions; self-assessment |
-| 3 | Stages | 4 competency-defined stages; no universal timeline |
+| 3 | Stages | 4 competency-defined stages, plus a toggle to an illustrative "over time" view (first months → years). No universal timeline. |
 | 4 | Foundations | Relaxation and minimal pressure; chord changes; alternate picking and muting |
 | 5 | Rhythm and time | Metronome; subdivision; 2 & 4; recording yourself |
 | 6 | Clean technique | Bends to pitch; vibrato; legato; two-hand muting; speed through accuracy |
@@ -99,8 +107,8 @@ The skill radar from slide 2 is the spine of the deck. Its skills appear as chip
 |---|---|
 | C1 | Each skill item states **why it matters / how to practise / how you'll know it's working**. |
 | C2 | **No calendar timelines.** Stages are defined by observable abilities. Pace is stated to depend on practice quantity, practice quality, background and goals. |
-| C3 | Historical claims about Jimmy Page and "Number One" are limited to widely reported core facts. Each one is listed with its verification status in `docs/content-sources.md`, and **must be verified before the final presentation.** |
-| C4 | Resources are categorised (tabs, lessons, theory/ear, tools) and marked free, paid or freemium. Their status is verified before release. |
+| C3 | Historical claims about Jimmy Page and "Number One" are limited to sourced facts, written with qualified language where the sources are uncertain (e.g. the production year). Sources are linked per claim in `docs/content-sources.md` (verified in iteration 003). |
+| C4 | Resources are categorised (tabs, lessons, theory/ear, tools) and marked free, paid or freemium. Tier claims are checked against official pages where possible (e.g. Moises: guitar stem is Premium; Songsterr: speed and loop are Plus). Re-check before release. |
 | C5 | Natural Hebrew guitarist terminology. On first use, the English term follows in an isolated LTR span, e.g. "בנד (bend)". |
 | C6 | No slide shows more than about 3–4 key points at once. Detail goes into compact cards. |
 | C7 | The emphasis areas required by the owner are each covered explicitly: consistent and focused practice; rhythm; clean technique and tension prevention; understanding over shape memorisation; complete songs and repertoire; ear, improvisation and expression; observable progress. |
@@ -130,10 +138,14 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | F11 | **Interactive roadmap:** 4 stages × 8 skill lanes; shows the viewer's ratings; selecting a stage shows its focus and "how you know you're there" | M | ✅ (basic) |
 | F12 | **Interactive fretboard:** key, scale, position and label (notes/intervals) selection; data loaded **only** from the Python-generated JSON; provenance badge; always LTR | M | ✅ |
 | F13 | **3D guitar:** persistent scene; per-slide camera presets; idle animation; drag and zoom on slide 8; view presets; auto-rotate toggle; WebGL-unavailable message | M | ✅ (procedural model) |
-| F14 | **High-quality 3D model** that is recognisably inspired by Number One (detailed geometry and finish). Built from original assets only. | M | ◐ (procedural placeholder; final model pending) |
+| F14 | **High-quality 3D model** that is recognisably inspired by Number One (detailed geometry and finish). Built from original assets only. | M | ◐ Iteration 003: detailed procedural model (carved top, outline-following burst, bound board, sourced Number One details), 60 fps on an integrated GPU. Not photoreal; see the limitations in iterations.md. |
 | F15 | Personal next steps on slide 11, computed from the radar | M | ✅ |
 | F16 | Curated resource list with categories and free/paid labels | M | ✅ (labels pending verification) |
-| F17 | Practical recommendation content on every building-block slide (cards, common-mistake callouts) | M | ✅ (initial content, pending review) |
+| F17 | Practical recommendation content on every building-block slide (cards, common-mistake callouts) | M | ✅ (reviewed in iteration 003) |
+| F18 | **Long-term progression view** (slide 3): toggle between the skill lanes and an illustrative timeline (4 phases, focus and example milestones, growth curves at different rates). Clearly labelled as illustration, not forecast. | M | ✅ |
+| F19 | **Mobile:** the 3D view never covers text or controls. It renders only in in-flow viewer boxes (slides 1 and 8). | M | ✅ |
+| F20 | **Mobile:** nav controls never overlap content; touch targets ≥ 44px; no horizontal page overflow | M | ✅ (automated check at 390×844) |
+| F21 | **Mobile:** the fretboard stays readable (fixed width, horizontal scroll, auto-scroll to the selected position) | S | ✅ |
 
 ### 5.3 Deferred features (later iterations)
 
@@ -195,12 +207,14 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | D2 | Vanilla JS, no bundler | Small scope; transparent code | ✅ Decided |
 | D3 | Procedural placeholder model behind a model contract; a detailed original model later | Validates the integration now; upgrade without a rewrite | ✅ Decided |
 | D4 | Diagrams, fretboard and the 3D guitar stay LTR | Musical convention; mirroring would mislead | ✅ Decided |
-| D5 | Fluid full-viewport layout (replaces the scaled 16:9 stage) | Readable on every screen size | ✅ Decided (002) |
+| D5 | Fluid full-viewport layout (replaces the scaled 16:9 stage). Slides scroll internally instead of being cropped. | Readable on every screen size | ✅ Decided (002), refined (003) |
 | D6 | Commit the generated data and guard it with `--check` | Clone-and-run simplicity | ✅ Decided |
 | D7 | `←` = next in RTL; `PageDown`/`Space` always next; swipe right = next | RTL reading direction; clicker-safe | ◐ Implemented provisionally, needs owner confirmation |
 | D8 | No calendar timelines; competency-defined stages | Avoid unfounded claims | ✅ Decided |
 | D9 | Hebrew terms, with the English term on first use | Natural for Israeli guitarists | ✅ Decided |
 | D10 | No third-party 3D, texture or audio assets; only original or procedural ones | Licensing safety | ✅ Decided |
+| D11 | Iteration 003: improve the **procedural** model rather than introduce a GLB | A Blender GLB would give the best fidelity, but it needs authoring that wasn't possible in this environment plus an asset pipeline and loader. Licensed third-party models were ruled out. The model contract keeps a GLB drop-in possible. | ✅ Decided (003) |
+| D12 | Small screens show the guitar only in in-flow viewer boxes (slides 1 and 8); other slides are text-only | Owner requirement: the guitar must never obscure content | ✅ Decided (003) |
 
 ## 9. Success Criteria
 
@@ -221,5 +235,5 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 1. D7: confirm the arrow-key and swipe direction.
 2. Which machine and browser will be used for the live presentation, and will there be internet access?
 3. How long is the slot, and who exactly is the audience?
-4. Final 3D model: build it in Blender (best quality and control), or extend the procedural model?
+4. Final 3D model: is the improved procedural model enough, or should a Blender GLB follow? See D11.
 5. Repository licence (MIT for code? content licence?).
