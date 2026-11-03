@@ -163,7 +163,10 @@ export function initPlanner(deck) {
 
 async function copyText(text) {
   try {
-    await navigator.clipboard.writeText(text);
+    // Some contexts (e.g. the standalone file:// build) never settle the
+    // permission request, so give the async API a deadline before falling back.
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('clipboard timeout')), 1200));
+    await Promise.race([navigator.clipboard.writeText(text), timeout]);
     return true;
   } catch {
     // fallback for browsers/contexts without the async clipboard API

@@ -7,6 +7,7 @@
   <meta name="description" content="מצגת אינטראקטיבית על לימוד גיטרה חשמלית והתקדמות כגיטריסטים — מפת כישורים, שלבי דרך, צוואר אינטראקטיבי וגיטרה בתלת-ממד.">
   <meta name="color-scheme" content="dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2713%27 fill=%27%23e3a43b%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23121011%27/%3E%3C/svg%3E">
+  <!-- build:standalone-remove (scripts/build.mjs inlines these into dist/presentation.html) -->
   <link rel="preload" href="assets/fonts/heebo-hebrew-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/rubik-hebrew-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="src/css/tokens.css">
@@ -22,6 +23,7 @@
     }
   </script>
   <script type="module" src="src/js/main.js"></script>
+  <!-- /build:standalone-remove -->
 </head>
 <body data-scene-mode="side">
   <a class="skip-link" href="#deck">דילוג לתוכן המצגת</a>
@@ -29,13 +31,15 @@
   <!-- 3D layer: one persistent canvas behind every slide -->
   <canvas id="scene" class="scene" aria-hidden="true"></canvas>
 
+  <!-- build:standalone-remove (not needed: the standalone file works from file://) -->
   <div class="file-warning" id="file-warning" hidden>
-    <p><strong>המצגת צריכה שרת מקומי.</strong> דפדפנים חוסמים מודולי JavaScript בקבצים שנפתחים ישירות מהדיסק.</p>
-    <p>הריצו בתיקיית הפרויקט: <code dir="ltr">python -m http.server 8000</code> ופתחו <code dir="ltr">http://localhost:8000</code></p>
+    <p><strong>קובץ המקור הזה צריך שרת מקומי.</strong> דפדפנים חוסמים מודולי JavaScript בקבצים שנפתחים ישירות מהדיסק.</p>
+    <p>אפשרויות: הפעילו את <code dir="ltr">launch.bat</code>, או פתחו את הגרסה העצמאית <code dir="ltr">dist/presentation.html</code> (נוצרת ב-<code dir="ltr">npm run build</code>), או הריצו <code dir="ltr">python -m http.server 8000</code> ופתחו <code dir="ltr">http://localhost:8000</code>.</p>
   </div>
   <script>
     if (location.protocol === 'file:') document.getElementById('file-warning').hidden = false;
   </script>
+  <!-- /build:standalone-remove -->
   <noscript><div class="file-warning"><p>המצגת דורשת JavaScript.</p></div></noscript>
 
   <header class="topbar">

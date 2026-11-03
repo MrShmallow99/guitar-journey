@@ -14,3 +14,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Generated distribution artifacts (npm run build); rebuilt by CI for GitHub Pages
+dist/

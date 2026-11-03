@@ -9,10 +9,19 @@ import { initFretboard, initFretboardError } from './components/fretboard.js';
 const DATA_URL = 'src/data/fretboard.json';
 const narrow = matchMedia('(max-width: 900px), (max-height: 560px)');
 
+// The standalone build (dist/presentation.html) embeds the same generated
+// JSON in <script type="application/json" id="guitar-data">, because file://
+// pages cannot fetch() local files. The source version fetches it.
 async function loadGuitarData() {
-  const res = await fetch(DATA_URL, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} עבור ${DATA_URL}`);
-  const data = await res.json();
+  const embedded = document.getElementById('guitar-data');
+  let data;
+  if (embedded) {
+    data = JSON.parse(embedded.textContent);
+  } else {
+    const res = await fetch(DATA_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status} עבור ${DATA_URL}`);
+    data = await res.json();
+  }
   if (data?.meta?.generator !== 'guitarlab') throw new Error('הקובץ אינו פלט של guitarlab');
   return data;
 }
