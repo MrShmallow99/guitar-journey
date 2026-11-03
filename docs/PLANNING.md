@@ -353,7 +353,7 @@ Fonts should be **self-hosted** (woff2, subset to Hebrew and Basic Latin), so th
 
 ## 8. Development Roadmap (4 phases)
 
-> **Iteration 002 scope:** Phase 1 follows the list the owner gave in prompt 002. It also plans to include the radar, a basic roadmap and personal next steps, because these are core features that can be built completely without stubs. The YAML content pipeline moves to Phase 2; until then, skill and stage content lives in a JS module.
+> **Iteration 002 (done):** Phase 1 followed the list the owner gave in prompt 002. It also included the radar, a basic roadmap and personal next steps, because these are core features that could be built completely without stubs. The YAML content pipeline moves to Phase 2; skill and stage content lives in `src/js/content/skills.js` for now. Results and limitations are in `docs/iterations.md`.
 
 ### Phase 1: Foundations and risk spikes
 

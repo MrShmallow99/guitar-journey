@@ -1,0 +1,13 @@
+[project]
+name = "guitarlab"
+version = "0.1.0"
+description = "Music-theory data engine for the Hebrew electric guitar presentation"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

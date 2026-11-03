@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Document status** | v0.2, revised after owner review (iteration 002) |
+| **Document status** | v0.2, revised after owner review (iteration 002). Status columns updated after the iteration 002 prototype. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
 
@@ -114,10 +114,10 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 
 | ID | Requirement | Pri | Status |
 |---|---|---|---|
-| F1 | Keyboard navigation: `←`/`↓`/`PageDown`/`Space` = next; `→`/`↑`/`PageUp` = previous; `Home`/`End`. Ignored while a form control has focus. Click buttons and touch swipe also work. | M | – |
-| F2 | URL hash deep links (`#/n`); browser back/forward works | M | – |
-| F3 | Progress bar (fills right to left), slide counter, act label | M | – |
-| F4 | Smooth, direction-aware slide transitions; reduced-motion respected | M | – |
+| F1 | Keyboard navigation: `←`/`↓`/`PageDown`/`Space` = next; `→`/`↑`/`PageUp` = previous; `Home`/`End`. Ignored while a form control has focus. Click buttons and touch swipe also work. | M | ✅ (swipe implemented but not tested on a device) |
+| F2 | URL hash deep links (`#/n`); editing the hash navigates. Slides update the URL with `replaceState`, so browser back/forward does **not** step through slides (this avoids filling the history; confirm whether that is the right behaviour). | M | ✅ |
+| F3 | Progress bar (fills right to left), slide counter, act label | M | ✅ |
+| F4 | Smooth, direction-aware slide transitions; reduced-motion respected | M | ✅ |
 | F5 | Overview grid mode | S | – |
 | F6 | Fullscreen toggle | S | – |
 | F7 | Presenter notes | L | – |
@@ -126,14 +126,14 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 
 | ID | Requirement | Pri | Status |
 |---|---|---|---|
-| F10 | **Skill radar self-assessment:** 8 sliders and an SVG radar; strongest and weakest skill summary; saved in localStorage; reset | M | – |
-| F11 | **Interactive roadmap:** 4 stages × 8 skill lanes; shows the viewer's ratings; selecting a stage shows its focus and "how you know you're there" | M | – |
-| F12 | **Interactive fretboard:** key, scale, position and label (notes/intervals) selection; data loaded **only** from the Python-generated JSON; provenance badge; always LTR | M | – |
-| F13 | **3D guitar:** persistent scene; per-slide camera presets; idle animation; drag and zoom on slide 8; view presets; auto-rotate toggle; WebGL-unavailable message | M | – |
-| F14 | **High-quality 3D model** that is recognisably inspired by Number One (detailed geometry and finish). Built from original assets only. | M | – |
-| F15 | Personal next steps on slide 11, computed from the radar | M | – |
-| F16 | Curated resource list with categories and free/paid labels | M | – |
-| F17 | Practical recommendation content on every building-block slide (cards, common-mistake callouts) | M | – |
+| F10 | **Skill radar self-assessment:** 8 sliders and an SVG radar; strongest and weakest skill summary; saved in localStorage; reset | M | ✅ |
+| F11 | **Interactive roadmap:** 4 stages × 8 skill lanes; shows the viewer's ratings; selecting a stage shows its focus and "how you know you're there" | M | ✅ (basic) |
+| F12 | **Interactive fretboard:** key, scale, position and label (notes/intervals) selection; data loaded **only** from the Python-generated JSON; provenance badge; always LTR | M | ✅ |
+| F13 | **3D guitar:** persistent scene; per-slide camera presets; idle animation; drag and zoom on slide 8; view presets; auto-rotate toggle; WebGL-unavailable message | M | ✅ (procedural model) |
+| F14 | **High-quality 3D model** that is recognisably inspired by Number One (detailed geometry and finish). Built from original assets only. | M | ◐ (procedural placeholder; final model pending) |
+| F15 | Personal next steps on slide 11, computed from the radar | M | ✅ |
+| F16 | Curated resource list with categories and free/paid labels | M | ✅ (labels pending verification) |
+| F17 | Practical recommendation content on every building-block slide (cards, common-mistake callouts) | M | ✅ (initial content, pending review) |
 
 ### 5.3 Deferred features (later iterations)
 
@@ -152,10 +152,10 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 
 | ID | Requirement | Pri | Status |
 |---|---|---|---|
-| P1 | The `guitarlab` package generates, for standard tuning, the note map for frets 0–22, spelled scales for all 12 keys (minor and major pentatonic, natural minor, major), pentatonic positions 1–5 and interval labels | M | – |
-| P2 | Fret positions (equal temperament, 24.75″ scale) are emitted as data and consumed by the 3D model | M | – |
-| P3 | Deterministic output with a SHA-256 content hash; `--check` mode detects stale committed data | M | – |
-| P4 | A `pytest` suite verifies the output against known reference positions and theory invariants | M | – |
+| P1 | The `guitarlab` package generates, for standard tuning, the note map for frets 0–22, spelled scales for all 12 keys (minor and major pentatonic, natural minor, major), pentatonic positions 1–5 and interval labels | M | ✅ |
+| P2 | Fret positions (equal temperament, 24.75″ scale) are emitted as data and consumed by the 3D model | M | ✅ |
+| P3 | Deterministic output with a SHA-256 content hash; `--check` mode detects stale committed data | M | ✅ |
+| P4 | A `pytest` suite verifies the output against known reference positions and theory invariants | M | ✅ (27 tests) |
 | P5 | YAML content pipeline with schema validation; Hebrew/BiDi/glossary lint | S | – |
 | P6 | CI (GitHub Actions) runs the tests and `--check` | S | – |
 
@@ -168,7 +168,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | Stack | Static HTML, CSS and vanilla JavaScript ES modules; no framework or bundler. Three.js r160, pinned and vendored together with its MIT licence. |
 | Serving | Served over HTTP (`python -m http.server`), with GitHub Pages later. `file://` is unsupported because browsers block ES modules there. The page detects this and shows instructions. |
 | Offline | No CDN at runtime: Three.js and the fonts are vendored. |
-| Browsers | Latest Chrome, Edge and Firefox (primary); Safari (best effort). |
+| Browsers | Latest Chrome, Edge and Firefox (primary); Safari (best effort). Iteration 002 was tested in headless Chrome only. |
 | RTL/BiDi | `lang="he" dir="rtl"`; CSS logical properties; `<bdi>` or `dir="ltr"` isolation for Latin terms, numbers and units; fretboard, tab and diagrams stay LTR. |
 | Responsive | Fluid full-viewport slides. Below 900 px, slides become a single scrollable column and the 3D layer dims. |
 | Fonts | Self-hosted variable woff2 (SIL OFL): Heebo (body), Rubik (display), JetBrains Mono (diagrams). |

@@ -1,0 +1,115 @@
+/* Fonts (self-hosted, SIL OFL; see assets/fonts/LICENSE-*.txt) */
+@font-face {
+  font-family: "Heebo"; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url("../../assets/fonts/heebo-hebrew-wght.woff2") format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Heebo"; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url("../../assets/fonts/heebo-latin-wght.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Rubik"; font-style: normal; font-weight: 300 900; font-display: swap;
+  src: url("../../assets/fonts/rubik-hebrew-wght.woff2") format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Rubik"; font-style: normal; font-weight: 300 900; font-display: swap;
+  src: url("../../assets/fonts/rubik-latin-wght.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap;
+  src: url("../../assets/fonts/jetbrains-mono-latin-wght.woff2") format("woff2");
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(70vmax 55vmax at 22% 62%, rgb(227 164 59 / 0.09), transparent 62%),
+    radial-gradient(55vmax 45vmax at 92% 6%, rgb(200 87 60 / 0.08), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.12;
+  margin: 0;
+  text-wrap: balance;
+}
+p { margin: 0; text-wrap: pretty; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+dl, dd { margin: 0; }
+
+a { color: var(--text); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+a:hover { color: var(--accent); }
+
+button, select, input { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--data);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* BiDi: Latin terms and numbers embedded in Hebrew are isolated so they
+   never reorder the surrounding sentence. */
+bdi, [dir="ltr"] { unicode-bidi: isolate; }
+.nowrap { white-space: nowrap; }
+code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
+kbd {
+  display: inline-block;
+  min-width: 1.8em;
+  padding: 0.05em 0.45em;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: var(--font-body);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.skip-link {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  inset-block-start: -4rem;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-sm);
+}
+.skip-link:focus { inset-block-start: var(--space-4); }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.file-warning {
+  position: fixed;
+  inset: auto var(--gutter) calc(var(--navbar-h) + var(--space-4));
+  z-index: 50;
+  padding: var(--space-4) var(--space-5);
+  background: var(--accent-2);
+  color: #fff;
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-2);
+}
+.file-warning[hidden] { display: none; }

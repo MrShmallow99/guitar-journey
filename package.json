@@ -1,0 +1,14 @@
+{
+  "name": "guitar-journey",
+  "private": true,
+  "description": "Dev tooling only (browser smoke test). The presentation itself has no build step or npm dependencies.",
+  "type": "module",
+  "scripts": {
+    "serve": "python -m http.server 8000",
+    "test:browser": "node tests/browser/smoke.mjs",
+    "screenshots": "node tests/browser/smoke.mjs --screenshots"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
+  }
+}

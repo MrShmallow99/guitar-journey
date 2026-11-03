@@ -1,0 +1,242 @@
+/* Deck layout: fixed chrome (top bar, nav bar), full-viewport slides,
+   and the persistent 3D canvas behind them. Logical properties only, so
+   the layout mirrors correctly in RTL. */
+
+/* ---------- 3D layer ---------- */
+.scene {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms var(--ease), filter 900ms var(--ease);
+}
+body[data-scene-mode="side"] .scene,
+body[data-scene-mode="interactive"] .scene { opacity: 1; }
+body[data-scene-mode="dim"] .scene { opacity: 0.22; filter: saturate(0.7); }
+body[data-scene-mode="interactive"] .scene { pointer-events: auto; cursor: grab; }
+body[data-scene-mode="interactive"] .scene:active { cursor: grabbing; }
+body.no-webgl .scene { display: none; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  height: var(--topbar-h);
+  padding-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  background: linear-gradient(to bottom, rgb(18 16 17 / 0.9), transparent);
+  pointer-events: none;
+}
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text);
+}
+.topbar__logo {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #f6d27a, var(--accent) 45%, var(--accent-2));
+  box-shadow: 0 0 12px rgb(227 164 59 / 0.6);
+}
+.topbar__act { flex: 1; }
+.topbar__counter { font-variant-numeric: tabular-nums; }
+
+/* ---------- slides ---------- */
+.deck {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: calc(var(--topbar-h) + var(--space-4)) var(--gutter) calc(var(--navbar-h) + var(--space-4));
+  display: flex;
+  flex-direction: column;
+  /* safe: if a slide is taller than the viewport it scrolls instead of being cropped */
+  justify-content: safe center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(var(--enter-x, 0));
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease),
+    visibility 0s linear var(--dur);
+}
+/* RTL: "forward" moves leftward, so the next slide enters from the left. */
+.deck[data-dir="forward"] .slide { --enter-x: -48px; }
+.deck[data-dir="back"] .slide { --enter-x: 48px; }
+.slide.is-leaving { --enter-x: 0; }
+.deck[data-dir="forward"] .slide.is-leaving { transform: translateX(48px); }
+.deck[data-dir="back"] .slide.is-leaving { transform: translateX(-48px); }
+
+.slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--dur) var(--ease) 80ms,
+    transform var(--dur) var(--ease) 80ms,
+    visibility 0s;
+}
+
+/* Staggered reveal of the main blocks of the active slide */
+.slide .slide__content > *,
+.slide .slide__inner > :not(.slide__content):not(.slide__aside) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.slide.is-active .slide__content > *,
+.slide.is-active .slide__inner > :not(.slide__content):not(.slide__aside) {
+  opacity: 1;
+  transform: none;
+}
+.slide.is-active .slide__content > :nth-child(2) { transition-delay: 60ms; }
+.slide.is-active .slide__content > :nth-child(3) { transition-delay: 120ms; }
+.slide.is-active .slide__content > :nth-child(4) { transition-delay: 180ms; }
+.slide.is-active .slide__content > :nth-child(5) { transition-delay: 240ms; }
+.slide.is-active .slide__content > :nth-child(n+6) { transition-delay: 300ms; }
+.slide.is-active .slide__inner > :not(.slide__content) { transition-delay: 200ms; }
+
+.slide__inner {
+  width: 100%;
+  max-width: 1500px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: center;
+  max-height: 100%;
+}
+.slide__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.slide__aside--stage { min-height: 40vh; }
+
+/* Wide slides: heading row on top, the interactive area beneath */
+.slide--wide .slide__inner {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  gap: var(--space-5);
+}
+.slide--wide .slide__content { max-width: 62rem; }
+
+/* Slide 8: text column is narrower so the explorable guitar has room.
+   Clicks outside the text column fall through to the 3D canvas. */
+.slide--stage .slide__inner { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); }
+.slide--stage, .slide--stage .slide__inner, .slide--stage .slide__aside { pointer-events: none; }
+.slide--stage .slide__content { pointer-events: auto; }
+
+.slide--hero .slide__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+.model-credit {
+  position: absolute;
+  inset-inline-end: var(--gutter);
+  inset-block-end: calc(var(--navbar-h) + var(--space-2));
+  max-width: 28rem;
+  font-size: var(--fs-small);
+  color: var(--text-faint);
+  text-align: end;
+}
+
+/* ---------- nav bar ---------- */
+.navbar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  height: var(--navbar-h);
+  padding-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background: linear-gradient(to top, rgb(18 16 17 / 0.92), transparent);
+}
+.navbar__btn {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.03);
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms, opacity 200ms;
+}
+.navbar__btn svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.navbar__btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.navbar__btn:disabled { opacity: 0.3; cursor: default; }
+
+.navbar__dots { display: flex; align-items: center; gap: 0.35rem; }
+.navbar__dots button {
+  width: 0.62rem;
+  height: 0.62rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: width 300ms var(--ease), background 300ms;
+}
+.navbar__dots button:hover { background: var(--text-muted); }
+.navbar__dots button[aria-current="step"] { width: 1.8rem; background: var(--accent); }
+.navbar__dots .dot-gap { width: 0.5rem; }
+
+.progress {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: var(--line);
+}
+.progress__bar {
+  height: 100%;
+  background: linear-gradient(to left, var(--accent), var(--accent-2));
+  transform-origin: right; /* RTL: fills from the right */
+  transform: scaleX(0);
+  transition: transform var(--dur) var(--ease);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px), (max-height: 560px) {
+  :root { --topbar-h: 3rem; --navbar-h: 3.5rem; }
+  .topbar__act { display: none; }
+  .topbar__brand { flex: 1; }
+
+  .slide {
+    justify-content: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .slide__inner,
+  .slide--hero .slide__inner,
+  .slide--stage .slide__inner { grid-template-columns: minmax(0, 1fr); max-height: none; }
+  .slide__aside--stage { display: none; }
+
+  /* On small screens the 3D layer always sits behind the text, dimmed,
+     except on the dedicated guitar slide, where a transparent window at
+     the top of the slide lets the guitar be dragged. */
+  body[data-scene-mode="side"] .scene { opacity: 0.22; }
+  .slide--stage .slide__aside--stage { display: block; order: -1; min-height: 42vh; }
+  .model-credit { position: static; text-align: start; margin-top: var(--space-5); }
+}

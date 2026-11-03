@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>המסע לגיטרה חשמלית</title>
+  <meta name="description" content="מצגת אינטראקטיבית על לימוד גיטרה חשמלית והתקדמות כגיטריסטים — מפת כישורים, שלבי דרך, צוואר אינטראקטיבי וגיטרה בתלת-ממד.">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2713%27 fill=%27%23e3a43b%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%275%27 fill=%27%23121011%27/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/heebo-hebrew-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/rubik-hebrew-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="src/css/tokens.css">
+  <link rel="stylesheet" href="src/css/base.css">
+  <link rel="stylesheet" href="src/css/deck.css">
+  <link rel="stylesheet" href="src/css/components.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./src/vendor/three/three.module.js",
+        "three/addons/": "./src/vendor/three/addons/"
+      }
+    }
+  </script>
+  <script type="module" src="src/js/main.js"></script>
+</head>
+<body data-scene-mode="side">
+  <a class="skip-link" href="#deck">דילוג לתוכן המצגת</a>
+
+  <!-- 3D layer: one persistent canvas behind every slide -->
+  <canvas id="scene" class="scene" aria-hidden="true"></canvas>
+
+  <div class="file-warning" id="file-warning" hidden>
+    <p><strong>המצגת צריכה שרת מקומי.</strong> דפדפנים חוסמים מודולי JavaScript בקבצים שנפתחים ישירות מהדיסק.</p>
+    <p>הריצו בתיקיית הפרויקט: <code dir="ltr">python -m http.server 8000</code> ופתחו <code dir="ltr">http://localhost:8000</code></p>
+  </div>
+  <script>
+    if (location.protocol === 'file:') document.getElementById('file-warning').hidden = false;
+  </script>
+  <noscript><div class="file-warning"><p>המצגת דורשת JavaScript.</p></div></noscript>
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__logo" aria-hidden="true"></span>
+      <span>המסע לגיטרה חשמלית</span>
+    </div>
+    <div class="topbar__act" id="act-label" aria-live="polite"></div>
+    <div class="topbar__counter"><bdi id="slide-counter">1 / 11</bdi></div>
+  </header>
+
+  <main id="deck" class="deck" aria-roledescription="מצגת" aria-label="המסע לגיטרה חשמלית">
+
+    <!-- ============ ACT I: THE MAP ============ -->
+
+    <!-- 1 · Opening -->
+    <section class="slide slide--hero" data-act="חלק א׳ · המפה" data-scene="hero" data-scene-mode="side" aria-label="שקף 1: פתיחה">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">מצגת אינטראקטיבית</p>
+          <h1 class="display">המסע לגיטרה <span class="accent">חשמלית</span></h1>
+          <p class="lead">מהאקורד הראשון ועד קול מוזיקלי משלכם. התקדמות בגיטרה היא <strong>מפה, לא סולם</strong>: כל כישור מתפתח בקצב שלו, והדרך תלויה במטרות שלכם.</p>
+          <ol class="acts">
+            <li><span class="acts__num">א׳</span><div><strong>המפה</strong><span>איפה אתם היום, ומה בכלל נחשב התקדמות</span></div></li>
+            <li><span class="acts__num">ב׳</span><div><strong>אבני הבניין</strong><span>מה בונים, ובאיזה סדר זה משתלם</span></div></li>
+            <li><span class="acts__num">ג׳</span><div><strong>הדרך קדימה</strong><span>איך מתאמנים, מודדים וממשיכים</span></div></li>
+          </ol>
+          <p class="hint">ניווט: <kbd>←</kbd> או <kbd>רווח</kbd> לשקף הבא · <kbd>→</kbd> לשקף הקודם</p>
+        </div>
+        <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>
+      </div>
+      <p class="model-credit">בתלת-ממד: גיטרה מסוגננת בהשראת ה-<bdi lang="en">Les Paul</bdi> <bdi lang="en">“Number One”</bdi> של ג׳ימי פייג׳ · מודל ראשוני</p>
+    </section>
+
+    <!-- 2 · Skill map (self-assessment radar) -->
+    <section class="slide slide--wide" data-act="חלק א׳ · המפה" data-scene="hero" data-scene-mode="off" aria-label="שקף 2: מפת הכישורים">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">מפת הכישורים שלכם</p>
+          <h2>אתם לא ״מתחילים״ או ״מתקדמים״ — יש לכם <span class="accent">פרופיל</span></h2>
+          <p class="lead">שמונה כישורים מתפתחים בקצב שונה. אפשר לנגן סולו מהיר ולהתקשות לשמור על קצב יציב, או להכיר תאוריה לעומק בלי לנגן אף שיר מההתחלה ועד הסוף. דרגו את עצמכם בכנות.</p>
+        </div>
+        <div class="radar" id="radar">
+          <div class="radar__controls">
+            <p class="radar__scale"><span><bdi>1</bdi> רק התחלתי</span><span><bdi>3</bdi> עובד ברוב המצבים</span><span><bdi>5</bdi> בטוח וחופשי</span></p>
+            <div class="radar__sliders" id="radar-sliders"></div>
+            <div class="radar__actions">
+              <button type="button" class="btn btn--ghost" id="radar-reset">איפוס הדירוג</button>
+              <p class="note">הדירוג נשמר רק בדפדפן שלכם, וממשיך איתכם להמשך המצגת.</p>
+            </div>
+          </div>
+          <figure class="radar__figure">
+            <svg id="radar-svg" viewBox="-200 -175 400 350" role="img" aria-labelledby="radar-summary"></svg>
+            <figcaption class="radar__summary" id="radar-summary" aria-live="polite"></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · Roadmap -->
+    <section class="slide slide--wide" data-act="חלק א׳ · המפה" data-scene="hero" data-scene-mode="off" aria-label="שקף 3: שלבי הדרך">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">שלבי הדרך</p>
+          <h2>ארבעה שלבים — וכל כישור <span class="accent">בקצב שלו</span></h2>
+          <p class="lead">השלבים מוגדרים לפי מה שאתם יודעים לעשות, לא לפי כמה זמן עבר. <strong>אין לוח זמנים אחיד:</strong> הקצב תלוי בכמות האימון, באיכותו, ברקע המוזיקלי ובמטרות.</p>
+        </div>
+        <div class="roadmap" id="roadmap">
+          <div class="roadmap__grid" id="roadmap-grid"></div>
+          <aside class="roadmap__detail card" id="roadmap-detail" aria-live="polite"></aside>
+        </div>
+        <p class="note roadmap__note" id="roadmap-note"></p>
+      </div>
+    </section>
+
+    <!-- ============ ACT II: BUILDING BLOCKS ============ -->
+
+    <!-- 4 · Foundations -->
+    <section class="slide" data-act="חלק ב׳ · אבני הבניין" data-scene="neck" data-scene-mode="side" aria-label="שקף 4: היסודות">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>1/6</bdi></p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>טכניקה</li><li>קצב</li><li>רפרטואר</li></ul>
+          <h2>היסודות: <span class="accent">גוף רפוי, צליל נקי</span></h2>
+          <p class="lead">כמעט כל בעיה מתקדמת — מהירות, דיוק, כאבים — מתחילה במתח מיותר. כאן בונים הרגלים שילוו אתכם שנים.</p>
+          <div class="cards">
+            <article class="card">
+              <h3>לחץ מינימלי</h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>לחצו על תו, הרפו בהדרגה עד שהצליל מזמזם, והוסיפו רק מעט כוח. לחצו קרוב לסריג <bdi lang="en">(fret)</bdi>.</dd>
+                <dt>סימן שזה עובד</dt><dd>עשר דקות נגינה בלי כאב, והאגודל לא ״מועך״ את הצוואר.</dd>
+              </dl>
+            </article>
+            <article class="card">
+              <h3>החלפות אקורדים</h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>״החלפה של דקה״ <bdi lang="en">(one-minute changes)</bdi>: סופרים כמה מעברים נקיים בין שני אקורדים בדקה אחת.</dd>
+                <dt>סימן שזה עובד</dt><dd>המספר עולה משבוע לשבוע, וכל המיתרים נשמעים.</dd>
+              </dl>
+            </article>
+            <article class="card">
+              <h3>יד הפריטה</h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>פריטה מתחלפת <bdi lang="en">(alternate picking)</bdi> — למטה-למעלה ברצף, לאט ועם מטרונום. משתיקים מיתרים שלא מנגנים.</dd>
+                <dt>סימן שזה עובד</dt><dd>אין מיתרים שמצלצלים בלי כוונה.</dd>
+              </dl>
+            </article>
+          </div>
+          <p class="mistake"><strong>טעות נפוצה</strong> להאיץ מוקדם מדי. כשמנגנים מהר מהיכולת, מתרגלים בעיקר את הטעויות. מהירות היא תוצר לוואי של דיוק ורפיון.</p>
+          <p class="bridge">ידיים רפויות הן הבסיס. הצעד הבא: לשים אותן בתוך זמן יציב.</p>
+        </div>
+        <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- 5 · Rhythm and time -->
+    <section class="slide" data-act="חלק ב׳ · אבני הבניין" data-scene="hero" data-scene-mode="dim" aria-label="שקף 5: קצב וזמן">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>2/6</bdi></p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>קצב</li><li>רפרטואר</li></ul>
+          <h2>קצב וזמן: <span class="accent">מה שהקהל מרגיש ראשון</span></h2>
+          <p class="lead">תו לא נכון נשכח מהר; קצב מתנדנד מורגש מיד. תזמון הוא כישור שמתאמנים עליו בנפרד — לא תוצר לוואי.</p>
+          <div class="cards">
+            <article class="card">
+              <h3>המטרונום כשותף</h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>מתחילים בקצב שבו אתם מדייקים, ומעלים בכמה <bdi lang="en">BPM</bdi> רק אחרי כמה חזרות נקיות ברצף.</dd>
+                <dt>סימן שזה עובד</dt><dd>אתם נשארים ״על הקליק״ גם בקטעים הקשים.</dd>
+              </dl>
+            </article>
+            <article class="card">
+              <h3>חלוקות <bdi lang="en">(subdivisions)</bdi></h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>סופרים בקול רבעים, שמיניות ושלישיות. יד הפריטה ממשיכה לזוז גם כשהיא לא פוגעת במיתרים.</dd>
+                <dt>סימן שזה עובד</dt><dd>עוברים בין חלוקות בלי לאבד את הפעמה.</dd>
+              </dl>
+            </article>
+            <article class="card">
+              <h3>הקליק על <bdi>2</bdi> ו-<bdi>4</bdi></h3>
+              <dl>
+                <dt>איך מתרגלים</dt><dd>מכוונים את המטרונום לחצי מהקצב ומדמיינים שהוא תוף הסנר על פעמות <bdi>2</bdi> ו-<bdi>4</bdi>.</dd>
+                <dt>סימן שזה עובד</dt><dd>הגרוב נשאר יציב גם כשהקליק ״נעלם״.</dd>
+              </dl>
+            </article>
+          </div>
+          <figure class="subdiv" dir="ltr" aria-label="תרשים חלוקות של תיבה אחת בארבעה רבעים">
+            <div class="subdiv__row" style="--n:1"><span class="subdiv__label" dir="rtl">רבעים</span><span class="subdiv__beats"><i>1</i><i>2</i><i>3</i><i>4</i></span></div>
+            <div class="subdiv__row" style="--n:2"><span class="subdiv__label" dir="rtl">שמיניות</span><span class="subdiv__beats"><i>1</i><i>&amp;</i><i>2</i><i>&amp;</i><i>3</i><i>&amp;</i><i>4</i><i>&amp;</i></span></div>
+            <div class="subdiv__row" style="--n:3"><span class="subdiv__label" dir="rtl">שלישיות</span><span class="subdiv__beats"><i>1</i><i>·</i><i>·</i><i>2</i><i>·</i><i>·</i><i>3</i><i>·</i><i>·</i><i>4</i><i>·</i><i>·</i></span></div>
+            <figcaption dir="rtl">תיבה אחת, הזמן זורם משמאל לימין כמו בתווים ובטאבים.</figcaption>
+          </figure>
+          <p class="mistake"><strong>טעות נפוצה</strong> לא להקליט את עצמכם. ההקלטה חושפת איפה אתם ממהרים או נגררים — דברים שלא שומעים תוך כדי נגינה.</p>
+          <p class="bridge">כשהזמן יציב, אפשר להתחיל לעבוד על האיכות של כל תו.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · Clean technique -->
+    <section class="slide" data-act="חלק ב׳ · אבני הבניין" data-scene="fret12" data-scene-mode="side" aria-label="שקף 6: טכניקה נקייה">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>3/6</bdi></p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>טכניקה</li><li>סאונד</li></ul>
+          <h2>טכניקה נקייה: <span class="accent">נשמעת קלה כי היא חסכונית</span></h2>
+          <p class="lead">המטרה אינה מהירות אלא שליטה: כל תו נשמע כמו שהתכוונתם, בלי רעשים ובלי מאמץ מיותר.</p>
+          <div class="cards cards--grid">
+            <article class="card card--compact">
+              <h3>בנד לגובה מדויק <bdi lang="en">(bend)</bdi></h3>
+              <p>נגנו קודם את תו היעד, ואז כופפו עד שאתם מגיעים אליו בדיוק. תמכו באצבע הכופפת בעוד אצבע או שתיים.</p>
+              <p class="card__sign">סימן: הבנד ״בכוון״, לא קצת מתחת.</p>
+            </article>
+            <article class="card card--compact">
+              <h3>ויברטו <bdi lang="en">(vibrato)</bdi></h3>
+              <p>התנועה מגיעה מהפרק ומהאמה, לא רק מהאצבע. שומרים על רוחב וקצב קבועים.</p>
+              <p class="card__sign">סימן: ויברטו אחיד שאתם שולטים ברוחבו.</p>
+            </article>
+            <article class="card card--compact">
+              <h3>לגאטו <bdi lang="en">(legato)</bdi></h3>
+              <p><bdi lang="en">Hammer-on</bdi> ו-<bdi lang="en">pull-off</bdi> בעוצמה שווה לתווים הפרוטים.</p>
+              <p class="card__sign">סימן: כל תו נשמע באותה עוצמה.</p>
+            </article>
+            <article class="card card--compact">
+              <h3>שקט בין התווים</h3>
+              <p>יד הלחיצה משתיקה מיתרים סמוכים, וכף יד הפריטה — את המיתרים הנמוכים. קריטי עם דיסטורשן.</p>
+              <p class="card__sign">סימן: שומעים רק את מה שהתכוונתם לנגן.</p>
+            </article>
+          </div>
+          <p class="mistake"><strong>טעות נפוצה</strong> ללחוץ חזק יותר כשמנסים להאיץ. מתח מגביל מהירות ועלול לגרום לכאבים. האטו, הרפו, ובנו מהירות בפרצים קצרים <bdi lang="en">(bursts)</bdi>.</p>
+          <p class="bridge">ידיים נקיות צריכות מפה: איפה התווים, ולמה הם עובדים יחד.</p>
+        </div>
+        <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- 7 · Fretboard (Python-generated data) -->
+    <section class="slide slide--wide" data-act="חלק ב׳ · אבני הבניין" data-scene="hero" data-scene-mode="off" aria-label="שקף 7: להבין את הצוואר">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>4/6</bdi></p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>הצוואר ותאוריה</li><li>שמיעה</li><li>אלתור</li></ul>
+          <h2>להבין את הצוואר — <span class="accent">לא רק לשנן צורות</span></h2>
+          <p class="lead">צורה <bdi lang="en">(shape)</bdi> היא נקודת התחלה. הבנה מתחילה כשיודעים איזה תו מנגנים ומה תפקידו ביחס לטוניקה <bdi lang="en">(root)</bdi>.</p>
+        </div>
+        <div class="fretboard" id="fretboard">
+          <div class="fretboard__controls">
+            <label class="field"><span>סולם</span><select id="fb-scale"></select></label>
+            <label class="field"><span>טוניקה</span><select id="fb-key" dir="ltr"></select></label>
+            <label class="field" id="fb-position-field"><span>תנוחה</span><select id="fb-position"></select></label>
+            <div class="field" role="group" aria-labelledby="fb-labels-title">
+              <span id="fb-labels-title">תוויות</span>
+              <div class="segmented">
+                <button type="button" data-labels="names" aria-pressed="true">שמות תווים</button>
+                <button type="button" data-labels="intervals" aria-pressed="false">מרווחים</button>
+              </div>
+            </div>
+          </div>
+          <figure class="fretboard__figure" dir="ltr">
+            <svg id="fb-svg" viewBox="0 0 1000 262" role="img" aria-labelledby="fb-summary"></svg>
+            <figcaption class="fretboard__legend" dir="rtl">
+              <span><i class="dot dot--root"></i>טוניקה</span>
+              <span><i class="dot dot--tone"></i>תו בסולם</span>
+              <span id="fb-legend-out"><i class="dot dot--out"></i>מחוץ לתנוחה</span>
+              <span class="fretboard__summary" id="fb-summary" aria-live="polite"></span>
+            </figcaption>
+          </figure>
+          <div class="fretboard__footer">
+            <ul class="tips">
+              <li>מצאו את כל הטוניקות בתנוחה לפני שמנגנים אותה.</li>
+              <li>נגנו את הסולם ואמרו בקול את שמות התווים או המרווחים.</li>
+              <li>חברו תנוחות סמוכות דרך התווים המשותפים להן.</li>
+            </ul>
+            <p class="mistake"><strong>טעות נפוצה</strong> לשנן ״קופסה״ אחת ולהיתקע בה לשנים. חברו תנוחות, נגנו לאורך מיתר אחד, ושימו לב על איזה תו אתם נוחתים.</p>
+            <p class="provenance" id="fb-provenance"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · Number One (dedicated 3D slide) -->
+    <section class="slide slide--stage" data-act="חלק ב׳ · אבני הבניין" data-scene="full" data-scene-mode="interactive" aria-label="שקף 8: Les Paul Number One">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>5/6</bdi> · מקרה בוחן</p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>סאונד</li><li>יצירה</li></ul>
+          <h2><bdi lang="en" class="nowrap">Les Paul “Number One”</bdi><br><span class="accent">הכלי כחלק מהקול</span></h2>
+          <p class="lead">הגיטרה שליוותה את ג׳ימי פייג׳ בשנות לד זפלין היא דוגמה לאופן שבו כלי, ידיים ובחירות סאונד הופכים לקול מזוהה.</p>
+          <ul class="facts">
+            <li>גיבסון לס פול סטנדרט משנת <bdi>1959</bdi></li>
+            <li>נקנתה מג׳ו וולש <bdi lang="en">(Joe Walsh)</bdi> בשנת <bdi>1969</bdi></li>
+            <li>הצוואר שויף לפרופיל דק במיוחד</li>
+          </ul>
+          <div class="cards">
+            <article class="card card--compact">
+              <h3>שני פיקאפים, שני צבעים</h3>
+              <p>פיקאפ הצוואר חם ועגול; פיקאפ הגשר בהיר וחד. מתג שלושה מצבים בוחר ביניהם או משלב את שניהם.</p>
+            </article>
+            <article class="card card--compact">
+              <h3>הווליום הוא כלי נגינה</h3>
+              <p>עם מגבר מנורות שמכוון לדיסטורשן, הורדת הווליום בגיטרה ״מנקה״ את הצליל — בלי לגעת במגבר.</p>
+            </article>
+            <article class="card card--compact">
+              <h3>קול = ידיים + השפעות + בחירות</h3>
+              <p>ציוד לבדו לא יוצר סגנון. אותו כלי נשמע אחרת בידיים אחרות.</p>
+            </article>
+          </div>
+          <div class="viewer" id="viewer-controls">
+            <div class="segmented" role="group" aria-label="זווית צפייה בגיטרה">
+              <button type="button" data-view="full" aria-pressed="true">כל הגיטרה</button>
+              <button type="button" data-view="pickups" aria-pressed="false">פיקאפים ובקרות</button>
+              <button type="button" data-view="neckView" aria-pressed="false">צוואר</button>
+              <button type="button" data-view="headstock" aria-pressed="false">ראש</button>
+            </div>
+            <button type="button" class="btn btn--ghost" id="autorotate" aria-pressed="false">סיבוב אוטומטי</button>
+            <p class="hint">גררו את הגיטרה כדי לסובב · גלגלת או צביטה לזום</p>
+          </div>
+          <p class="viewer-unavailable" id="viewer-unavailable" hidden>התצוגה בתלת-ממד אינה זמינה בדפדפן זה (<bdi lang="en">WebGL</bdi> כבוי או לא נתמך).</p>
+          <p class="draft-note">המודל: סגנון חופשי בהשראת הגיטרה, לא העתק מדויק וללא סמלים מסחריים. הפרטים ההיסטוריים ממתינים לאימות מקורות סופי.</p>
+        </div>
+        <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- 9 · Songs, ear and personal voice -->
+    <section class="slide" data-act="חלק ב׳ · אבני הבניין" data-scene="closing" data-scene-mode="dim" aria-label="שקף 9: שירים, שמיעה וקול אישי">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אבן בניין <bdi>6/6</bdi></p>
+          <ul class="chips" aria-label="כישורים בשקף"><li>רפרטואר</li><li>שמיעה</li><li>אלתור</li><li>יצירה</li></ul>
+          <h2>שירים, שמיעה <span class="accent">וקול אישי</span></h2>
+          <p class="lead">המטרה היא מוזיקה, לא תרגילים. הדרך עוברת משירים שלמים, דרך האוזן, אל רעיונות משלכם.</p>
+          <ol class="path">
+            <li>
+              <h3>שירים שלמים</h3>
+              <p>נגנו שירים מההתחלה ועד הסוף — כולל מעברים וסיום — בלי לעצור על טעויות. נהלו רשימת רפרטואר של שירים ״מוכנים״.</p>
+              <p class="card__sign">סימן: כמה שירים ברצף, בעל פה.</p>
+            </li>
+            <li>
+              <h3>שמיעה <bdi lang="en">(ear training)</bdi></h3>
+              <p>נסו להוציא מנגינה או ריף פשוט מהשמיעה לפני שאתם בודקים טאב. שירו את מה שאתם מנגנים, והאטו הקלטות בקטעים מהירים.</p>
+              <p class="card__sign">סימן: מוצאים מהר את התו הראשון של מנגינה מוכרת.</p>
+            </li>
+            <li>
+              <h3>אלתור וביטוי</h3>
+              <p>התחילו בשלושה-ארבעה תווים. עבדו על פרייזינג <bdi lang="en">(phrasing)</bdi>: רווחים, חזרה, שאלה ותשובה. כוונו לתווי האקורד <bdi lang="en">(chord tones)</bdi>.</p>
+              <p class="card__sign">סימן: האלתור נשמע כמו משפטים, לא כמו סולם.</p>
+            </li>
+          </ol>
+          <p class="mistake"><strong>טעות נפוצה</strong> ללמוד רק פתיחים וריפים ולא לסיים אף שיר. שיר שלם מלמד מבנה, סיבולת ומעברים — דברים שריף לא מלמד.</p>
+          <p class="bridge">כל זה דורש אימון. איך מתאמנים כך שזה באמת עובד?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ACT III: THE ROAD AHEAD ============ -->
+
+    <!-- 10 · Practice that works -->
+    <section class="slide slide--wide" data-act="חלק ג׳ · הדרך קדימה" data-scene="hero" data-scene-mode="off" aria-label="שקף 10: אימון שעובד">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">אימון ומדידה</p>
+          <h2>אימון שעובד — <span class="accent">והתקדמות שאפשר לשמוע</span></h2>
+          <p class="lead">עקביות ומיקוד מנצחים כמות. אימון קצר וממוקד בתדירות גבוהה עדיף בדרך כלל על אימון ארוך ונדיר.</p>
+        </div>
+        <div class="practice">
+          <section class="practice__session">
+            <h3>דוגמה לאימון של <bdi>30</bdi> דקות</h3>
+            <div class="session" role="img" aria-label="חימום 5 דקות, טכניקה ממוקדת 10 דקות, שיר ורפרטואר 10 דקות, אלתור או יצירה 5 דקות">
+              <span style="--min:5"><b>חימום רפוי</b><bdi>5′</bdi></span>
+              <span style="--min:10"><b>טכניקה ממוקדת</b><bdi>10′</bdi></span>
+              <span style="--min:10"><b>שיר ורפרטואר</b><bdi>10′</bdi></span>
+              <span style="--min:5"><b>אלתור / יצירה</b><bdi>5′</bdi></span>
+            </div>
+            <p class="note">התאימו את החלוקה למטרות שלכם — זו נקודת פתיחה, לא כלל.</p>
+            <ul class="principles">
+              <li><strong>מטרה אחת לכל בלוק.</strong> ״לנקות את המעבר בתיבה 3״, לא ״לתרגל סולו״.</li>
+              <li><strong>לאט ומדויק לפני מהר.</strong> מעלים קצב רק אחרי חזרות נקיות.</li>
+              <li><strong>מקליטים, מקשיבים, מתקנים.</strong> האוזן מהצד שומעת יותר.</li>
+            </ul>
+          </section>
+          <section class="practice__metrics">
+            <h3>מה מודדים — שיפורים שאפשר לראות ולשמוע</h3>
+            <dl class="metrics">
+              <div><dt>מהירות נקייה</dt><dd>הקצב המרבי שבו קטע נשמע נקי שלוש פעמים ברצף.</dd></div>
+              <div><dt>החלפות בדקה</dt><dd>כמה מעברים נקיים בין שני אקורדים בדקה.</dd></div>
+              <div><dt>הקלטה חודשית</dt><dd>אותו קטע, אותם תנאים — ומשווים לחודש הקודם.</dd></div>
+              <div><dt>רפרטואר</dt><dd>כמה שירים שלמים אתם מנגנים בעל פה.</dd></div>
+              <div><dt>שמיעה</dt><dd>כמה זמן לוקח להוציא ריף מוכר מהשמיעה.</dd></div>
+            </dl>
+            <p class="mistake"><strong>טעות נפוצה</strong> למדוד רק ״כמה זמן התאמנתי״. זמן הוא קלט; מה שחשוב הוא מה השתפר.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · Resources and next steps -->
+    <section class="slide slide--wide" data-act="חלק ג׳ · הדרך קדימה" data-scene="closing" data-scene-mode="dim" aria-label="שקף 11: משאבים והצעד הבא">
+      <div class="slide__inner">
+        <div class="slide__content">
+          <p class="kicker">סיכום</p>
+          <h2>משאבים — <span class="accent">והצעד הבא שלכם</span></h2>
+        </div>
+        <div class="closing">
+          <section class="resources" aria-label="משאבים מומלצים">
+            <div class="resources__group">
+              <h3>טאבים</h3>
+              <ul>
+                <li><a href="https://www.ultimate-guitar.com" target="_blank" rel="noopener"><bdi lang="en">Ultimate Guitar</bdi></a><span class="price">חינם + מנוי</span><p>מאגר טאבים ואקורדים ענק מהקהילה. האיכות משתנה — בדקו דירוגים והשוו להקלטה.</p></li>
+                <li><a href="https://www.songsterr.com" target="_blank" rel="noopener"><bdi lang="en">Songsterr</bdi></a><span class="price">חינם + מנוי</span><p>טאבים אינטראקטיביים עם השמעה מסונכרנת ושליטה בקצב.</p></li>
+                <li><a href="https://www.guitar-pro.com" target="_blank" rel="noopener"><bdi lang="en">Guitar Pro</bdi></a><span class="price">בתשלום</span><p>תוכנה לכתיבה, עריכה והשמעה של טאבים.</p></li>
+              </ul>
+            </div>
+            <div class="resources__group">
+              <h3>שיעורים</h3>
+              <ul>
+                <li><a href="https://www.justinguitar.com" target="_blank" rel="noopener"><bdi lang="en">JustinGuitar</bdi></a><span class="price">חינם</span><p>קורס מובנה מהצעד הראשון ועד רמת ביניים ומעבר.</p></li>
+                <li><a href="https://www.fender.com/play" target="_blank" rel="noopener"><bdi lang="en">Fender Play</bdi></a><span class="price">מנוי</span><p>קורס וידאו מובנה לפי סגנונות.</p></li>
+              </ul>
+            </div>
+            <div class="resources__group">
+              <h3>תאוריה ושמיעה</h3>
+              <ul>
+                <li><a href="https://www.musictheory.net" target="_blank" rel="noopener"><bdi lang="en">musictheory.net</bdi></a><span class="price">חינם</span><p>שיעורים ותרגילים אינטראקטיביים, כולל זיהוי מרווחים.</p></li>
+                <li><a href="https://www.teoria.com" target="_blank" rel="noopener"><bdi lang="en">teoria.com</bdi></a><span class="price">חינם</span><p>תרגילי שמיעה ותאוריה בדפדפן.</p></li>
+              </ul>
+            </div>
+            <div class="resources__group">
+              <h3>כלי תרגול</h3>
+              <ul>
+                <li><a href="https://www.seventhstring.com" target="_blank" rel="noopener"><bdi lang="en">Transcribe!</bdi></a><span class="price">בתשלום</span><p>האטת הקלטות בלי לשנות את גובה הצליל — להוצאה מהשמיעה.</p></li>
+                <li><a href="https://moises.ai" target="_blank" rel="noopener"><bdi lang="en">Moises</bdi></a><span class="price">חינם + מנוי</span><p>הפרדת כלים מהקלטה (למשל השתקת הגיטרה) והאטה.</p></li>
+              </ul>
+            </div>
+          </section>
+          <section class="next-steps card" id="next-steps" aria-live="polite"></section>
+        </div>
+        <p class="closing__line">התקדמות היא מפה. בחרו כיוון אחד לשבוע הקרוב — והתחילו.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="navbar">
+    <button type="button" class="navbar__btn" id="prev" aria-label="לשקף הקודם">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <nav class="navbar__dots" id="dots" aria-label="מעבר לשקף"></nav>
+    <button type="button" class="navbar__btn" id="next" aria-label="לשקף הבא">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <div class="progress" aria-hidden="true"><div class="progress__bar" id="progress-bar"></div></div>
+  </footer>
+</body>
+</html>

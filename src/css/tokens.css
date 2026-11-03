@@ -1,0 +1,57 @@
+/* Design tokens: "Late-night studio".
+   Warm near-blacks, sunburst amber, a faded cherry red, and teal reserved
+   for interactive/data elements so it never competes with the accents. */
+
+:root {
+  /* colour */
+  --bg: #121011;
+  --bg-raised: #1a1516;
+  --surface: rgb(33 27 26 / 0.78);
+  --surface-strong: #221c1b;
+  --line: rgb(242 235 221 / 0.10);
+  --line-strong: rgb(242 235 221 / 0.20);
+  --text: #f2ebdd;
+  --text-muted: #b6ab9b;
+  --text-faint: #8a8073;
+  --accent: #e3a43b;          /* sunburst amber */
+  --accent-soft: rgb(227 164 59 / 0.14);
+  --accent-2: #c8573c;        /* faded cherry */
+  --accent-2-soft: rgb(200 87 60 / 0.12);
+  --data: #5fb7b0;            /* interactive / data */
+  --data-soft: rgb(95 183 176 / 0.16);
+  --on-accent: #1a1209;
+
+  /* type */
+  --font-body: "Heebo", system-ui, "Segoe UI", Arial, sans-serif;
+  --font-display: "Rubik", "Heebo", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  --fs-display: clamp(2.6rem, 1.4rem + 4.2vw, 5.4rem);
+  --fs-h2: clamp(1.7rem, 1.1rem + 2.1vw, 3rem);
+  --fs-h3: clamp(1rem, 0.92rem + 0.35vw, 1.2rem);
+  --fs-lead: clamp(1.02rem, 0.92rem + 0.5vw, 1.3rem);
+  --fs-body: clamp(0.92rem, 0.86rem + 0.25vw, 1.04rem);
+  --fs-small: clamp(0.78rem, 0.74rem + 0.15vw, 0.88rem);
+
+  /* space & shape */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --gutter: clamp(1rem, 0.4rem + 3vw, 4rem);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --topbar-h: 3.5rem;
+  --navbar-h: 4rem;
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --dur: 600ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 1ms; }
+}
