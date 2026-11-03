@@ -2,9 +2,18 @@
 
 | | |
 |---|---|
-| **Document status** | v0.3, updated after iteration 003: quality and content review. Status columns reflect the current implementation. |
+| **Document status** | v0.4, updated after iteration 004: practice planner and cross-slide coherence. Status columns reflect the current implementation. |
 | **Last updated** | 2026-11-03 |
 | **Related** | [`docs/PLANNING.md`](docs/PLANNING.md) (concept, outline, trade-offs) · [`docs/content-sources.md`](docs/content-sources.md) (claim verification) · [`docs/iterations.md`](docs/iterations.md) (change log) |
+
+**Changes in v0.4 (iteration 004)**
+
+- Personal practice planner on slide 10 (F22–F25).
+- Slide 11 personal summary that shares state with the planner (F15).
+- Python data-flow panel on slide 7 (F26).
+- C2 and D8 now distinguish the rejected calendar predictions from the illustrative timeline.
+- D13–D15 added.
+- The Lighthouse results are recorded (S7).
 
 **Changes in v0.3 (iteration 003)**
 
@@ -85,8 +94,8 @@ The skill radar from slide 2 is the spine of the deck. Its skills appear as chip
 | 7 | Understanding the neck | Notes, roots, intervals, pentatonic positions (Python-powered fretboard) |
 | 8 | "Number One" | Sourced core facts; pickups and controls as tone tools; voice = hands + influences + choices |
 | 9 | Songs, ear and voice | Complete songs and repertoire; learning by ear; improvisation through phrasing |
-| 10 | Practice that works | Consistency; focus; an example session; observable metrics |
-| 11 | Resources and next step | Curated resources, including tab sites; personal next steps |
+| 10 | Practice that works | Consistency and focus; **personal practice planner** (duration, goal, ratings → a session with exercises, success criteria and reasons); observable metrics |
+| 11 | Resources and next step | Curated resources, including tab sites; **personal summary** (map, plan, next step) |
 
 ### 4.2 Skill dimensions (8)
 
@@ -106,7 +115,7 @@ The skill radar from slide 2 is the spine of the deck. Its skills appear as chip
 | ID | Requirement |
 |---|---|
 | C1 | Each skill item states **why it matters / how to practise / how you'll know it's working**. |
-| C2 | **No calendar timelines.** Stages are defined by observable abilities. Pace is stated to depend on practice quantity, practice quality, background and goals. |
+| C2 | **No calendar *predictions*.** Stages are defined by observable abilities, and pace depends on practice quantity, practice quality, background and goals. The slide 3 "over time" view (iteration 003) is allowed because it is an **illustration**: labelled "המחשה, לא תחזית", framed as one example learner, and paired with "time alone does not decide". It never states when anyone *will* reach a level. |
 | C3 | Historical claims about Jimmy Page and "Number One" are limited to sourced facts, written with qualified language where the sources are uncertain (e.g. the production year). Sources are linked per claim in `docs/content-sources.md` (verified in iteration 003). |
 | C4 | Resources are categorised (tabs, lessons, theory/ear, tools) and marked free, paid or freemium. Tier claims are checked against official pages where possible (e.g. Moises: guitar stem is Premium; Songsterr: speed and loop are Plus). Re-check before release. |
 | C5 | Natural Hebrew guitarist terminology. On first use, the English term follows in an isolated LTR span, e.g. "בנד (bend)". |
@@ -139,20 +148,25 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | F12 | **Interactive fretboard:** key, scale, position and label (notes/intervals) selection; data loaded **only** from the Python-generated JSON; provenance badge; always LTR | M | ✅ |
 | F13 | **3D guitar:** persistent scene; per-slide camera presets; idle animation; drag and zoom on slide 8; view presets; auto-rotate toggle; WebGL-unavailable message | M | ✅ (procedural model) |
 | F14 | **High-quality 3D model** that is recognisably inspired by Number One (detailed geometry and finish). Built from original assets only. | M | ◐ Iteration 003: detailed procedural model (carved top, outline-following burst, bound board, sourced Number One details), 60 fps on an integrated GPU. Not photoreal; see the limitations in iterations.md. |
-| F15 | Personal next steps on slide 11, computed from the radar | M | ✅ |
+| F15 | **Personal summary** on slide 11: the map (strongest/weakest), the generated plan if one exists, and one next step from the planner logic. It works with no ratings and no plan. | M | ✅ (iteration 004; replaces the iteration-002 next-steps box) |
 | F16 | Curated resource list with categories and free/paid labels | M | ✅ (labels pending verification) |
 | F17 | Practical recommendation content on every building-block slide (cards, common-mistake callouts) | M | ✅ (reviewed in iteration 003) |
 | F18 | **Long-term progression view** (slide 3): toggle between the skill lanes and an illustrative timeline (4 phases, focus and example milestones, growth curves at different rates). Clearly labelled as illustration, not forecast. | M | ✅ |
 | F19 | **Mobile:** the 3D view never covers text or controls. It renders only in in-flow viewer boxes (slides 1 and 8). | M | ✅ |
 | F20 | **Mobile:** nav controls never overlap content; touch targets ≥ 44px; no horizontal page overflow | M | ✅ (automated check at 390×844) |
 | F21 | **Mobile:** the fretboard stays readable (fixed width, horizontal scroll, auto-scroll to the selected position) | S | ✅ |
+| F22 | **Practice planner** (slide 10): choose 15/30/45/60 minutes and one of 5 goals; reuses the slide 2 ratings; generates a session | M | ✅ |
+| F23 | Each block has a time allocation, a concrete exercise with steps, an observable success criterion, the reason it was chosen, and a link to its source slide | M | ✅ |
+| F24 | Deterministic, explainable logic (`core/planner.js`) shared by slides 10 and 11. Changes regenerate live; choices persist; the plan can be cleared. | M | ✅ (14 unit tests) |
+| F25 | Copy the plan as readable text | S | ✅ |
+| F26 | Slide 7 "How this works": build-time Python → JSON → JavaScript in the browser | S | ✅ |
 
 ### 5.3 Deferred features (later iterations)
 
 | ID | Requirement | Pri |
 |---|---|---|
 | F20 | Practice metronome (Web Audio lookahead scheduler, subdivisions, tap tempo, gap click) | L |
-| F21 | Practice routine builder | L |
+| ~~F21~~ | ~~Practice routine builder~~ | Delivered as the practice planner (F22–F25) in iteration 004 |
 | F22 | Plucked-string audio synthesis (notes, phrases, pickup tone examples) | L |
 | F23 | 3D hotspots with Hebrew labels; scale highlights on the 3D neck synced with the 2D fretboard | S |
 | F24 | Myth vs. fact cards, phrase lab | L |
@@ -210,11 +224,14 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | D5 | Fluid full-viewport layout (replaces the scaled 16:9 stage). Slides scroll internally instead of being cropped. | Readable on every screen size | ✅ Decided (002), refined (003) |
 | D6 | Commit the generated data and guard it with `--check` | Clone-and-run simplicity | ✅ Decided |
 | D7 | `←` = next in RTL; `PageDown`/`Space` always next; swipe right = next | RTL reading direction; clicker-safe | ◐ Implemented provisionally, needs owner confirmation |
-| D8 | No calendar timelines; competency-defined stages | Avoid unfounded claims | ✅ Decided |
+| D8 | **Rejected:** calendar predictions ("intermediate after a year"). **Accepted (003):** an illustrative timeline clearly labelled as an example, alongside the competency-defined stages | Avoid unfounded claims while still showing the time dimension the owner asked for | ✅ Decided (002), refined (003) |
 | D9 | Hebrew terms, with the English term on first use | Natural for Israeli guitarists | ✅ Decided |
 | D10 | No third-party 3D, texture or audio assets; only original or procedural ones | Licensing safety | ✅ Decided |
 | D11 | Iteration 003: improve the **procedural** model rather than introduce a GLB | A Blender GLB would give the best fidelity, but it needs authoring that wasn't possible in this environment plus an asset pipeline and loader. Licensed third-party models were ruled out. The model contract keeps a GLB drop-in possible. | ✅ Decided (003) |
 | D12 | Small screens show the guitar only in in-flow viewer boxes (slides 1 and 8); other slides are text-only | Owner requirement: the guitar must never obscure content | ✅ Decided (003) |
+| D13 | Planner logic: fixed layouts per duration. Focus = argmax(0.6 × goal relevance + 0.4 × need). Weak foundations (rhythm or technique ≤ 2) take the support block. Every session ends in an application to real music. | Goal-led but sensitive to weaknesses; transparent, testable, no backend. Presented as a starting point, not an optimised programme. | ✅ Decided (004) |
+| D14 | One source of truth: the plan is always derived from the current ratings + choices; only the choices are stored | Slides 10 and 11 can never disagree; no duplicated recommendation logic | ✅ Decided (004) |
+| D15 | Explain the Python link on slide 7 in plain Hebrew (a build-time step), without Pyodide | Owner requirement; avoids implying Python runs in the browser | ✅ Decided (004) |
 
 ## 9. Success Criteria
 
@@ -226,7 +243,7 @@ Status: ✅ = implemented · ◐ = partial · – = not started. (Updated after 
 | S4 | Theory data is correct | `pytest` passes; manual spot-check against references |
 | S5 | Python visibly powers the deck | The badge hash matches `--check`; the fretboard fails visibly without the data |
 | S6 | Reliable live presentation | Rehearsal on the target machine, offline |
-| S7 | Quality bar | Lighthouse Accessibility ≥ 95, Performance ≥ 85 (desktop) |
+| S7 | Quality bar | Lighthouse Accessibility ≥ 95, Performance ≥ 85 (desktop). **Iteration 004 measurement:** Accessibility 100 and Best Practices 100 on slides 1, 7 and 10; Performance 75–79 over 3 runs on slide 1. **Performance target not met**; see iterations.md. |
 | S8 | Reproducible | A fresh clone runs using only the README |
 | S9 | Documented process | `docs/prompts/` and `docs/iterations.md` are complete |
 

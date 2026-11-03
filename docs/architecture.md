@@ -14,7 +14,7 @@
                                         │                                                          │
                                         │  components/fretboard.js ◀── cells, positions, spelling │
                                         │  three/guitar-procedural.js ◀── fret_positions          │
-                                        │  core/deck.js · core/ratings.js · components/*          │
+                                        │  core/deck.js · ratings.js · planner.js · components/*   │
                                         └──────────────────────────────────────────────────────────┘
 ```
 
@@ -35,12 +35,16 @@ The presentation is static: `index.html` plus ES modules, with no build step and
 |---|---|
 | `core/deck.js` | Slide state; keyboard (RTL: `←` = next), buttons, dots, swipe, `#/n` deep links, progress. Emits `change`. |
 | `core/ratings.js` | Shared self-assessment state with localStorage persistence (wrapped in try/catch). Emits `change`. |
+| `core/planner.js` | **Pure** recommendation logic: `buildPlan(ratings, {minutes, goal})` and `planToText()`. No DOM, so it is unit-tested in Node. The rules are documented in the file header and the README. |
+| `core/plan-state.js` | Persisted planner choices (duration, goal, generated). `plan` is derived from ratings + choices on every read, so slides 10 and 11 cannot disagree. |
+| `content/exercises.js` | Exercise library (steps, success criterion, rating range, source slide), plus the warm-up, reflection and per-goal application blocks |
 | `content/skills.js` | Hebrew skill and stage content used by several components. Planned to move to YAML compiled by Python. |
 | `components/radar.js` | Slide 2: 8 sliders, SVG radar, strongest/weakest summary |
 | `components/roadmap.js` | Slide 3: stage × skill lanes showing the viewer's ratings; stage details |
 | `components/fretboard.js` | Slide 7: renders the generated data; always LTR |
 | `components/timeline.js` | Slide 3 "over time" view: phase cards and illustrative growth curves (validated palette, legend and direct labels, table view). Toggles with the roadmap. |
-| `components/next-steps.js` | Slide 11: two weakest skills → concrete practice tips with links back to slides |
+| `components/planner.js` | Slide 10 UI: radio groups (duration, goal), generate / copy / clear, session bar, expandable blocks |
+| `components/summary.js` | Slide 11: map + plan + next step. The next step comes from `buildPlan` (the plan, or a 30-minute general preview). |
 | `three/stage.js` | Renderer, lights, environment, OrbitControls, camera tweens, render loop. Model-agnostic. |
 | `three/presets.js` | Camera presets that aim at **anchor names** |
 | `three/guitar-procedural.js` | Procedural model implementing the contract. The carved top is built from inset rings that follow the outline; the burst texture is painted from the same rings. |

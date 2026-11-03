@@ -133,3 +133,61 @@ Scope: improve the existing experience. No unrelated features were added. The 11
 - **Blocked fetches:** JustinGuitar, the Moises help pages and fender.com/play returned 403, so their tier claims rely on search-indexed extracts of official pages or official community posts. They are marked ⚠️ in `content-sources.md`.
 - **Not tested:** Firefox, Safari, real touch devices; Lighthouse and accessibility audits.
 - On mobile, OrbitControls captures drags inside the slide 8 viewer box, so the page scrolls only outside the box. This is intended, but it should be tried on a real phone.
+
+---
+
+## Iteration 004: Practice planner and cross-slide coherence (2026-11-03)
+
+**Prompt:** [`prompts/004-practice-planner-and-coherence.md`](prompts/004-practice-planner-and-coherence.md)
+
+### Commits
+
+1. `Record prompt 004 verbatim`
+2. `Practice planner logic: deterministic, explainable, unit-tested`
+3. `Slide 10 planner UI, slide 11 personal summary, slide 7 data-flow panel`
+4. `Performance and accessibility: async GPU setup, target sizes`
+5. `3D: plain pearloid inlay material (one fewer shader program)`
+6. Tests, screenshots and documentation (this entry)
+
+### What was built
+
+| Area | Change |
+|---|---|
+| **Practice planner (slide 10)** | The viewer chooses a duration (15/30/45/60) and a goal (general, rhythm, lead, songs, improvisation) as native radio groups, then generates a session. Each block has a time, a concrete exercise with steps, an observable success criterion, a reason, and a link to its source slide. Changes update the session live. Copy as text; clear. "How the plan is chosen" and the measurement list sit in disclosures. |
+| **Recommendation logic** | `core/planner.js` (pure). It has fixed layouts per duration; the focus is argmax(0.6 × goal relevance + 0.4 × need); weak foundations (rhythm or technique ≤ 2) take the support block; every session ends with an application to real music; exercises are matched to the rating, preferring goal-specific variants. It is deterministic, has no backend, and is described to viewers as a starting point, not an optimised programme. |
+| **Exercise library** | `content/exercises.js`: 19 skill exercises plus warm-up, reflection and per-goal applications, all drawn from slides 4–9. Tempos and English terms are wrapped in Unicode isolates, so the same strings work in the DOM and in the copied text. |
+| **Shared state** | `core/plan-state.js` stores only the choices. The plan is always recomputed from ratings + choices, so slides 10 and 11 cannot disagree. The old `next-steps.js` was removed; its role moved into `summary.js`, which uses the same planner logic. |
+| **Personal summary (slide 11)** | Map (strongest/weakest), plan (if generated) with a link back to slide 10, and one next step from the planner logic. It works with no ratings and/or no plan. |
+| **Slide 7 "How this works"** | A disclosure explaining build-time Python → `fretboard.json` (hash) → JavaScript drawing in the browser, stating explicitly that Python does not run in the browser. No Pyodide or backend. |
+| **Content fixes** | Slide 1: "initial model" → "built in code… an educational illustration, not a historical reproduction". Navigation hint mentions the on-screen buttons, with a separate touch-screen hint. The support block is labelled "חיזוק" rather than "תחזוקה", because it isn't always a maintenance block. The PRD (C2, D8) and PLANNING now distinguish the *rejected calendar predictions* from the *accepted illustrative timeline* on slide 3. |
+
+### Issues found during validation, and fixes
+
+| Issue | How it was found | Fix |
+|---|---|---|
+| **Lighthouse target-size failure** on the progress dots (Accessibility 95) | Lighthouse | 24px hit areas with the visible pill drawn inside → Accessibility 100 |
+| **Total Blocking Time about 1,000 ms** (Performance 60) | Lighthouse; then profiling showed the model build takes about 90 ms, while the **synchronous first render (shader compilation) takes about 590 ms** | `renderer.compileAsync()`; the environment map and compilation moved into an async init split across tasks; yield before building the 3D scene; one fewer shader variant; the minified three.js r160 build |
+| Content scrolled under the translucent top bar showed through on tall slides (slide 10 with a 6-block plan) | Screenshot review | Slides mask content at the bar edges |
+| The open slide 7 "How this works" panel stretched its column across the slide | Screenshot review | Fixed-proportion footer columns |
+
+### Validation results (actually run)
+
+| Check | Result |
+|---|---|
+| `python -m pytest` | 27 passed |
+| `python -m guitarlab.build --check` | OK, sha256 `08417f0d7ad2…` (data unchanged) |
+| `npm run test:unit` (new) | **14/14 passed.** Covers: layouts sum to the duration; structure per duration; determinism; the goal leads; a weakness shifts the focus within a goal; goal-irrelevant weaknesses are not chosen; the weak-foundation support rule; lead-specific exercises; the rhythm example (metronome + subdivisions + application); every block is concrete; the unrated path; the formula; exercise coverage for every skill and rating; text export. |
+| `npm run test:browser` | **57/57 passed.** The new checks cover the planner across durations and goals, rating changes altering the plan, BiDi isolates in the generated text, clipboard copy, keyboard arrows in the option groups (the slide stays put), slide 11 referencing the plan after a reload, plan reset, the unrated path on slides 10 and 11, the slide 7 panel, and mobile touch sizes for the planner controls. |
+| Lighthouse 12.2.1, desktop preset, headless Chrome on D3D11 | **Accessibility 100 · Best Practices 100** on slides 1, 7 and 10. **Performance:** 60 before the fixes; after them, 75–79 over three runs on slide 1 (TBT 394–499 ms, LCP about 1.3 s, CLS 0.001). Earlier single runs during the fixes scored 81–82, so the results vary from run to run. **The PRD target of ≥ 85 is not met.** |
+| Screenshots | 11 desktop and 11 mobile slides, plus slide 10 with a plan, slide 11 with a plan, the slide 7 panel, the slide 3 time view and the slide 8 close-ups. All inspected. |
+
+### Remaining issues
+
+- **Performance below target.** The remaining blocking time comes from synchronous WebGL work: generating the environment map and linking shader programs (tasks of about 190 and 290 ms). Options:
+  - replace the RoomEnvironment PMREM with a pre-baked or simpler environment;
+  - merge static meshes and materials;
+  - defer 3D setup until the first 3D slide is shown.
+- **The plan isn't a snapshot.** It follows later rating changes. This is intended (one source of truth), but a viewer might expect a saved plan to stay fixed.
+- **Ratings and plan reset separately.** Resetting the radar doesn't clear a generated plan; the plan then switches to the "no ratings" basis, and says so.
+- **The planner's exercises haven't been reviewed by a guitar teacher.** Tempo suggestions such as 60–70 BPM are reasonable defaults, not research findings.
+- **Not tested:** Firefox, Safari and real touch devices. The Lighthouse accessibility score is automated only; there has been no screen-reader walkthrough.

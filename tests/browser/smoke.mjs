@@ -1,6 +1,6 @@
 // Browser smoke test: serves the repo, drives the presentation in headless
 // Chrome/Edge, checks navigation, the Python-powered fretboard, the radar ->
-// next-steps link and the 3D scene, and saves screenshots.
+// planner/summary state and the 3D scene, and saves screenshots.
 //
 //   npm install            (installs puppeteer-core only; uses your installed Chrome)
 //   npm run test:browser   [-- --screenshots]
@@ -147,12 +147,99 @@ try {
   check('time view is labelled as illustrative', tl.disclaimer.includes('המחשה, לא תחזית'));
   await page.click('[data-roadmap-view="skills"]');
   check('toggle returns to the skill lanes', await page.evaluate(() => !document.querySelector('[data-view-panel="skills"]').hidden));
-  const steps = await page.$eval('#next-steps', (e) => e.textContent);
-  check('next steps list the two weakest skills', steps.includes('שמיעה') && steps.includes('קצב'), steps.slice(0, 80));
+  const summary0 = await page.$eval('#summary', (e) => e.textContent);
+  check('slide 11 summary uses the ratings (strongest, weakest, next step)', summary0.includes('רפרטואר') && summary0.includes('שמיעה') && summary0.includes('עוד לא בניתם אימון'), summary0.slice(0, 90));
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForSelector('html[data-ready="true"]');
   const persisted = await page.$$eval('#radar-sliders input', (i) => i.map((x) => x.value).join(''));
   check('ratings persist across reload', persisted === '42313524', persisted);
+
+  // ---- practice planner (slide 10), shared with the summary (slide 11)
+  await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  const empty = await page.evaluate(() => ({
+    empty: Boolean(document.querySelector('.planner__empty')),
+    gen: !document.getElementById('planner-generate').hidden,
+    copy: document.getElementById('planner-copy').hidden,
+    profile: document.getElementById('planner-profile').textContent,
+  }));
+  check('planner starts empty, with the ratings profile shown', empty.empty && empty.gen && empty.copy && empty.profile.includes('שמיעה'), empty.profile);
+  const pick = (name, value) => page.evaluate((n, v) => document.querySelector(`input[name="${n}"][value="${v}"]`).closest('label').click(), name, value);
+  const planInfo = () => page.evaluate(() => {
+    const blocks = [...document.querySelectorAll('.plan-blocks > li')];
+    return {
+      title: document.querySelector('.planner__result h3')?.textContent ?? '',
+      minutes: blocks.reduce((n, li) => n + parseInt(li.querySelector('.plan-blocks__time').textContent, 10), 0),
+      kinds: blocks.map((li) => li.querySelector('.plan-blocks__kind').textContent),
+      titles: blocks.map((li) => li.querySelector('.plan-blocks__title').textContent),
+      complete: blocks.every((li) => li.querySelectorAll('.plan-blocks__steps li').length >= 2 && li.querySelector('.card__sign').textContent.length > 12 && li.querySelector('.plan-blocks__why').textContent.length > 12),
+      text: document.getElementById('planner-result').textContent,
+    };
+  });
+  await pick('planner-minutes', 45);
+  await pick('planner-goal', 'rhythm');
+  await page.click('#planner-generate');
+  let info = await planInfo();
+  check('45-minute rhythm plan: blocks sum to 45 min, each with steps, success criterion and reason', info.minutes === 45 && info.complete && info.title.includes('45'), `${info.minutes} min · ${info.kinds.join(' | ')}`);
+  check('rhythm goal focuses on rhythm exercises and ends with a recording block', info.kinds.some((k) => k.includes('מיקוד') && k.includes('קצב')) && info.kinds.at(-1).includes('הקלטה'), info.titles.join(' | '));
+  check('tempos and terms are BiDi-isolated in the generated instructions', info.text.includes('\u2066') && /BPM/.test(info.text));
+  const durations = {};
+  for (const m of [15, 30, 60]) {
+    await pick('planner-minutes', m);
+    const x = await planInfo();
+    durations[m] = x.minutes;
+  }
+  check('changing the duration regenerates the plan (15/30/60)', durations[15] === 15 && durations[30] === 30 && durations[60] === 60, JSON.stringify(durations));
+  await pick('planner-minutes', 30);
+  await pick('planner-goal', 'improv');
+  info = await planInfo();
+  check('changing the goal changes the focus (improv -> ear for this profile)', info.kinds.some((k) => k.includes('מיקוד') && k.includes('שמיעה')), info.kinds.join(' | '));
+  await page.goto(`${URL}#/2`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  await page.evaluate(() => { const i = document.querySelectorAll('#radar-sliders input')[3]; i.value = 5; i.dispatchEvent(new Event('input', { bubbles: true })); });
+  await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+  info = await planInfo();
+  check('changing a rating changes the plan (ear 1 -> 5 moves the improv focus to the fretboard)', info.kinds.some((k) => k.includes('מיקוד') && k.includes('הצוואר')), info.kinds.join(' | '));
+  const ctx = browser.defaultBrowserContext();
+  await ctx.overridePermissions(URL.replace(/\/$/, ''), ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  await page.click('#planner-copy');
+  const clip = await page.evaluate(() => navigator.clipboard.readText());
+  check('copy button puts a readable plan on the clipboard', clip.includes('30 דקות') && clip.includes('✓') && clip.includes('לא תוכנית מדעית'), clip.split('\n')[0]);
+  await page.focus('input[name="planner-goal"]:checked');
+  await page.keyboard.press('ArrowLeft');
+  const kb = await page.evaluate(() => ({ hash: location.hash, goal: document.querySelector('input[name="planner-goal"]:checked').value }));
+  check('keyboard: arrow keys move between planner options without changing slide', kb.hash === '#/10' && kb.goal !== 'improv', JSON.stringify(kb));
+  await page.goto(`${URL}#/11`, { waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  const summary1 = await page.$eval('#summary', (e) => e.textContent);
+  check('slide 11 references the generated plan (persisted across reload)', summary1.includes('30 דקות') && !summary1.includes('עוד לא בניתם'), summary1.slice(0, 120));
+  await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+  await page.click('#planner-reset');
+  await page.goto(`${URL}#/11`, { waitUntil: 'networkidle0' });
+  check('plan reset clears it on slide 11 too', (await page.$eval('#summary', (e) => e.textContent)).includes('עוד לא בניתם אימון'));
+  await page.goto(`${URL}#/2`, { waitUntil: 'networkidle0' });
+  await page.click('#radar-reset');
+  await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+  await page.click('#planner-generate');
+  const unrated = await page.evaluate(() => ({ profile: document.getElementById('planner-profile').textContent, text: document.getElementById('planner-result').textContent }));
+  check('without a self-assessment the planner still works and says so', unrated.profile.includes('עוד לא דירגתם') && unrated.text.includes('עוד לא דירגתם'), unrated.profile.slice(0, 60));
+  await page.click('#planner-reset');
+  await page.goto(`${URL}#/11`, { waitUntil: 'networkidle0' });
+  const summary2 = await page.$eval('#summary', (e) => e.textContent);
+  check('slide 11 works with no ratings and no plan', summary2.includes('עוד לא דירגתם') && summary2.includes('עוד לא בניתם') && summary2.includes('הצעה כללית'), summary2.slice(0, 100));
+  // restore the ratings used by later checks
+  await page.goto(`${URL}#/2`, { waitUntil: 'networkidle0' });
+  await page.evaluate(() => {
+    const values = [4, 2, 3, 1, 3, 5, 2, 4];
+    document.querySelectorAll('#radar-sliders input').forEach((i, n) => { i.value = values[n]; i.dispatchEvent(new Event('input', { bubbles: true })); });
+  });
+
+  // ---- slide 7 "how this works" panel
+  await page.goto(`${URL}#/7`, { waitUntil: 'networkidle0' });
+  await page.click('.howto summary');
+  const howto = await page.$eval('.howto', (e) => ({ open: e.open, text: e.textContent }));
+  check('slide 7 explains the build-time Python -> data -> JavaScript flow', howto.open && howto.text.includes('לא רץ בדפדפן') && howto.text.includes('fretboard.json'));
 
   // ---- 3D stage
   const stage = await page.evaluate(() => {
@@ -210,6 +297,13 @@ try {
     if (r.btn < 44) mobileIssues.push(`slide ${i}: nav button ${r.btn}px`);
   }
   check('mobile: guitar only inside in-flow viewers; nav bar clear of content; no page overflow; 44px nav targets', mobileIssues.length === 0, mobileIssues.join(' | '));
+  await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  await page.evaluate(() => document.getElementById('planner-generate').click());
+  const touch = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.choice span, .plan-blocks summary, #planner-copy')].map((e) => e.getBoundingClientRect().height)));
+  check('mobile: planner options, plan rows and buttons are at least 44px tall', touch >= 44, `${Math.round(touch)}px`);
+  await page.evaluate(() => document.getElementById('planner-reset').click());
   await page.goto(`${URL}#/8`, { waitUntil: 'networkidle0' });
   await page.reload({ waitUntil: 'networkidle0' });
   await page.waitForSelector('html[data-ready="true"]');
@@ -237,6 +331,19 @@ try {
       await new Promise((r) => setTimeout(r, 2500));
       await page.screenshot({ path: join(dir, `slide-${String(i).padStart(2, '0')}.png`) });
     }
+    await page.goto(`${URL}#/10`, { waitUntil: 'networkidle0' });
+    await pick('planner-minutes', 45);
+    await pick('planner-goal', 'lead');
+    await page.click('#planner-generate');
+    await new Promise((r) => setTimeout(r, 900));
+    await page.screenshot({ path: join(dir, 'slide-10-plan.png') });
+    await page.goto(`${URL}#/11`, { waitUntil: 'networkidle0' });
+    await new Promise((r) => setTimeout(r, 900));
+    await page.screenshot({ path: join(dir, 'slide-11-with-plan.png') });
+    await page.goto(`${URL}#/7`, { waitUntil: 'networkidle0' });
+    await page.evaluate(() => { document.querySelector('.howto').open = true; });
+    await new Promise((r) => setTimeout(r, 600));
+    await page.screenshot({ path: join(dir, 'slide-07-howto.png') });
     await page.goto(`${URL}#/3`, { waitUntil: 'networkidle0' });
     await page.click('[data-roadmap-view="time"]');
     await new Promise((r) => setTimeout(r, 800));

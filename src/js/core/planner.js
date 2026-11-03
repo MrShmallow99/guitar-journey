@@ -43,7 +43,7 @@ export const LAYOUTS = {
   60: [['warmup', 5], ['focus', 20], ['support', 13], ['application', 17], ['reflect', 5]],
 };
 
-export const BLOCK_LABELS = { warmup: 'חימום', focus: 'מיקוד', support: 'תחזוקה', application: 'יישום במוזיקה', reflect: 'הקלטה ומשוב' };
+export const BLOCK_LABELS = { warmup: 'חימום', focus: 'מיקוד', support: 'חיזוק', application: 'יישום במוזיקה', reflect: 'הקלטה ומשוב' };
 
 const skillById = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
 const goalById = Object.fromEntries(GOALS.map((g) => [g.id, g]));
