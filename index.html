@@ -58,6 +58,7 @@
           <p class="kicker">מצגת אינטראקטיבית</p>
           <h1 class="display">המסע לגיטרה <span class="accent">חשמלית</span></h1>
           <p class="lead">מהאקורד הראשון ועד קול מוזיקלי משלכם. התקדמות בגיטרה היא <strong>מפה, לא סולם</strong>: כל כישור מתפתח בקצב שלו, והדרך תלויה במטרות שלכם.</p>
+          <div class="mobile-viewer" data-mobile-viewer aria-hidden="true"></div>
           <ol class="acts">
             <li><span class="acts__num">א׳</span><div><strong>המפה</strong><span>איפה אתם היום, ומה בכלל נחשב התקדמות</span></div></li>
             <li><span class="acts__num">ב׳</span><div><strong>אבני הבניין</strong><span>מה בונים, ובאיזה סדר זה משתלם</span></div></li>
@@ -103,11 +104,33 @@
           <h2>ארבעה שלבים — וכל כישור <span class="accent">בקצב שלו</span></h2>
           <p class="lead">השלבים מוגדרים לפי מה שאתם יודעים לעשות, לא לפי כמה זמן עבר. <strong>אין לוח זמנים אחיד:</strong> הקצב תלוי בכמות האימון, באיכותו, ברקע המוזיקלי ובמטרות.</p>
         </div>
-        <div class="roadmap" id="roadmap">
-          <div class="roadmap__grid" id="roadmap-grid"></div>
-          <aside class="roadmap__detail card" id="roadmap-detail" aria-live="polite"></aside>
+        <div class="segmented roadmap__views" role="group" aria-label="תצוגת המפה">
+          <button type="button" data-roadmap-view="skills" aria-pressed="true">לפי כישורים</button>
+          <button type="button" data-roadmap-view="time" aria-pressed="false">לאורך זמן</button>
         </div>
-        <p class="note roadmap__note" id="roadmap-note"></p>
+        <div class="roadmap-view" data-view-panel="skills">
+          <div class="roadmap" id="roadmap">
+            <div class="roadmap__grid" id="roadmap-grid"></div>
+            <aside class="roadmap__detail card" id="roadmap-detail" aria-live="polite"></aside>
+          </div>
+          <p class="note roadmap__note" id="roadmap-note"></p>
+        </div>
+        <div class="roadmap-view timeline" data-view-panel="time" id="timeline" hidden>
+          <p class="timeline__disclaimer"><strong>המחשה, לא תחזית.</strong> כך זה עשוי להיראות אצל נגן אחד שמתרגל באופן קבוע וממוקד. אצל אחרים כל שלב יכול לקחת הרבה פחות או הרבה יותר זמן.</p>
+          <ol class="timeline__phases" id="timeline-phases"></ol>
+          <figure class="timeline__chart">
+            <svg id="timeline-svg" viewBox="0 0 1000 118" role="img" aria-labelledby="timeline-caption"></svg>
+            <figcaption id="timeline-caption">
+              <span class="timeline__legend" id="timeline-legend"></span>
+              <span class="note">עקומות להמחשה בלבד (לא נתונים): כישורים שונים צומחים בקצב שונה — הטכניקה קופצת מוקדם, והשמיעה והאלתור מבשילים לרוב לאט יותר וממשיכים לצמוח שנים.</span>
+            </figcaption>
+            <details class="timeline__table">
+              <summary>הצגת העקומות כטבלה</summary>
+              <table id="timeline-table"></table>
+            </details>
+          </figure>
+          <p class="timeline__note"><strong>הזמן לבדו לא קובע.</strong> שני נגנים שהתחילו באותו יום יכולים להיות במקומות שונים לגמרי אחרי שנה. מה שקובע הוא כמה ואיך מתרגלים — מיקוד, עקביות ומשוב — לא כמה זמן עבר מאז שקניתם גיטרה.</p>
+        </div>
       </div>
     </section>
 
@@ -253,6 +276,7 @@
               </div>
             </div>
           </div>
+          <p class="scroll-hint">גללו לצדדים כדי לראות את כל הצוואר</p>
           <figure class="fretboard__figure" dir="ltr">
             <svg id="fb-svg" viewBox="0 0 1000 262" role="img" aria-labelledby="fb-summary"></svg>
             <figcaption class="fretboard__legend" dir="rtl">
@@ -288,6 +312,18 @@
             <li>פייג׳ קנה אותה מג׳ו וולש <bdi lang="en">(Joe Walsh)</bdi> באפריל <bdi>1969</bdi>, בסיבוב ההופעות האמריקאי</li>
             <li>וולש כבר שייף את הצוואר לפרופיל דק לפני המכירה</li>
           </ul>
+          <div class="mobile-viewer mobile-viewer--interactive" data-mobile-viewer aria-label="גיטרה בתלת-ממד — גררו כדי לסובב"></div>
+          <div class="viewer" id="viewer-controls">
+            <div class="segmented" role="group" aria-label="זווית צפייה בגיטרה">
+              <button type="button" data-view="full" aria-pressed="true">כל הגיטרה</button>
+              <button type="button" data-view="pickups" aria-pressed="false">פיקאפים ובקרות</button>
+              <button type="button" data-view="neckView" aria-pressed="false">צוואר</button>
+              <button type="button" data-view="headstock" aria-pressed="false">ראש</button>
+            </div>
+            <button type="button" class="btn btn--ghost" id="autorotate" aria-pressed="false">סיבוב אוטומטי</button>
+            <p class="hint">גררו את הגיטרה כדי לסובב · גלגלת או צביטה לזום</p>
+          </div>
+          <p class="viewer-unavailable" id="viewer-unavailable" hidden>התצוגה בתלת-ממד אינה זמינה בדפדפן זה (<bdi lang="en">WebGL</bdi> כבוי או לא נתמך).</p>
           <div class="cards">
             <article class="card card--compact">
               <h3>שני פיקאפים, שני צבעים</h3>
@@ -302,17 +338,6 @@
               <p>ציוד לבדו לא יוצר סגנון. אותו כלי נשמע אחרת בידיים אחרות.</p>
             </article>
           </div>
-          <div class="viewer" id="viewer-controls">
-            <div class="segmented" role="group" aria-label="זווית צפייה בגיטרה">
-              <button type="button" data-view="full" aria-pressed="true">כל הגיטרה</button>
-              <button type="button" data-view="pickups" aria-pressed="false">פיקאפים ובקרות</button>
-              <button type="button" data-view="neckView" aria-pressed="false">צוואר</button>
-              <button type="button" data-view="headstock" aria-pressed="false">ראש</button>
-            </div>
-            <button type="button" class="btn btn--ghost" id="autorotate" aria-pressed="false">סיבוב אוטומטי</button>
-            <p class="hint">גררו את הגיטרה כדי לסובב · גלגלת או צביטה לזום</p>
-          </div>
-          <p class="viewer-unavailable" id="viewer-unavailable" hidden>התצוגה בתלת-ממד אינה זמינה בדפדפן זה (<bdi lang="en">WebGL</bdi> כבוי או לא נתמך).</p>
           <p class="draft-note">המודל בתלת-ממד הוא המחשה חינוכית בהשראת הגיטרה — לא שחזור היסטורי, וללא סמלים מסחריים. מקורות: <bdi lang="en">Gibson, Guitar.com</bdi> (ראו <code dir="ltr">docs/content-sources.md</code>).</p>
         </div>
         <div class="slide__aside slide__aside--stage" aria-hidden="true"></div>

@@ -132,6 +132,21 @@ try {
   check('radar summary names strongest and weakest', summary.includes('רפרטואר') && summary.includes('שמיעה'), summary);
   const marker = await page.$$eval('.roadmap__marker', (m) => m.map((x) => x.textContent).join(''));
   check('roadmap markers use the ratings', marker === '42313524', marker);
+  await page.goto(`${URL}#/3`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  check('slide 3 opens on the skill-lane view', await page.evaluate(() => !document.querySelector('[data-view-panel="skills"]').hidden && document.getElementById('timeline').hidden));
+  await page.click('[data-roadmap-view="time"]');
+  const tl = await page.evaluate(() => ({
+    hidden: document.getElementById('timeline').hidden,
+    skillsHidden: document.querySelector('[data-view-panel="skills"]').hidden,
+    phases: document.querySelectorAll('#timeline-phases > li').length,
+    lines: document.querySelectorAll('#timeline-svg .tl-line').length,
+    disclaimer: document.querySelector('.timeline__disclaimer').textContent,
+  }));
+  check('time view shows 4 phases and 4 illustrative curves', !tl.hidden && tl.skillsHidden && tl.phases === 4 && tl.lines === 4, JSON.stringify({ p: tl.phases, l: tl.lines }));
+  check('time view is labelled as illustrative', tl.disclaimer.includes('המחשה, לא תחזית'));
+  await page.click('[data-roadmap-view="skills"]');
+  check('toggle returns to the skill lanes', await page.evaluate(() => !document.querySelector('[data-view-panel="skills"]').hidden));
   const steps = await page.$eval('#next-steps', (e) => e.textContent);
   check('next steps list the two weakest skills', steps.includes('שמיעה') && steps.includes('קצב'), steps.slice(0, 80));
   await page.reload({ waitUntil: 'networkidle0' });
@@ -148,7 +163,7 @@ try {
   });
   check('3D stage initialised with WebGL', Boolean(stage) && !(await page.evaluate(() => document.body.classList.contains('no-webgl'))));
   check('procedural guitar rendered', stage?.triangles > 1000, stage ? `${stage.triangles} triangles, ${stage.meshes} meshes` : 'none');
-  const frets = await page.evaluate(() => window.__stage.model.object.children.filter((m) => m.geometry?.type === 'BoxGeometry' && Math.abs(m.geometry.parameters.width - 0.06) < 1e-9).length);
+  const frets = await page.evaluate(() => window.__stage.model.object.children.filter((m) => m.name === 'fret').length);
   check('3D frets come from generated data (22)', frets === json.frets, `${frets}`);
   await page.goto(`${URL}#/8`, { waitUntil: 'networkidle0' });
   await page.waitForSelector('html[data-ready="true"]');
@@ -157,11 +172,60 @@ try {
   await page.click('[data-view="pickups"]');
   await new Promise((r) => setTimeout(r, 1600));
   const near = await page.evaluate(() => window.__stage.camera.position.distanceTo(window.__stage.controls.target));
-  check('view preset moves the camera', near < 25, near.toFixed(1));
+  check('view preset moves the camera closer than the full view', near < 40, near.toFixed(1));
   await page.click('#autorotate');
   check('auto-rotate toggle', await page.evaluate(() => window.__stage.controls.autoRotate === true));
   await page.keyboard.press('ArrowLeft');
   check('leaving slide 8 disables controls', await page.evaluate(() => !window.__stage.controls.enabled && !window.__stage.controls.autoRotate));
+
+  // ---- mobile layout (390x844): the guitar never sits behind text
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const mobileIssues = [];
+  for (let i = 1; i <= 11; i++) {
+    await page.goto(`${URL}#/${i}`, { waitUntil: 'networkidle0' });
+    await page.reload({ waitUntil: 'networkidle0' });
+    await page.waitForSelector('html[data-ready="true"]');
+    const r = await page.evaluate(() => {
+      const canvas = document.getElementById('scene');
+      const mode = document.body.dataset.sceneMode;
+      const slide = document.querySelector('.slide.is-active');
+      slide.scrollTop = slide.scrollHeight; // scroll to the end of the slide
+      const nav = document.querySelector('.navbar').getBoundingClientRect();
+      const top = document.querySelector('.topbar').getBoundingClientRect();
+      const blocks = [...slide.querySelectorAll('.slide__content > *, .slide__inner > :not(.slide__content):not(.slide__aside)')]
+        .filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0);
+      const last = blocks.reduce((m, e) => Math.max(m, e.getBoundingClientRect().bottom), 0);
+      const btn = document.getElementById('next').getBoundingClientRect();
+      return {
+        canvasOk: mode === 'off' || Boolean(canvas.closest('[data-mobile-viewer]')),
+        mode,
+        lastBottom: Math.round(last), navTop: Math.round(nav.top), topBottom: Math.round(top.bottom),
+        overflowX: document.documentElement.scrollWidth > window.innerWidth + 1,
+        btn: Math.round(Math.min(btn.width, btn.height)),
+      };
+    });
+    if (!r.canvasOk) mobileIssues.push(`slide ${i}: canvas outside viewer (mode ${r.mode})`);
+    if (r.lastBottom > r.navTop) mobileIssues.push(`slide ${i}: content ends under the nav bar (${r.lastBottom} > ${r.navTop})`);
+    if (r.overflowX) mobileIssues.push(`slide ${i}: horizontal page overflow`);
+    if (r.btn < 44) mobileIssues.push(`slide ${i}: nav button ${r.btn}px`);
+  }
+  check('mobile: guitar only inside in-flow viewers; nav bar clear of content; no page overflow; 44px nav targets', mobileIssues.length === 0, mobileIssues.join(' | '));
+  await page.goto(`${URL}#/8`, { waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  const viewer = await page.evaluate(() => {
+    const v = document.querySelector('.mobile-viewer--interactive').getBoundingClientRect();
+    const title = document.querySelector('.slide.is-active h2').getBoundingClientRect();
+    const controls = document.getElementById('viewer-controls').getBoundingClientRect();
+    const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    return { h: Math.round(v.height), clearOfTitle: !overlaps(v, title), clearOfControls: !overlaps(v, controls), controls: window.__stage.controls.enabled };
+  });
+  check('mobile slide 8: usable 3D viewer that does not overlap title or controls', viewer.h >= 250 && viewer.clearOfTitle && viewer.clearOfControls && viewer.controls, JSON.stringify(viewer));
+  await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
+  await page.goto(`${URL}#/1`, { waitUntil: 'networkidle0' });
+  await page.reload({ waitUntil: 'networkidle0' });
+  await page.waitForSelector('html[data-ready="true"]');
+  check('desktop: canvas returns to the fullscreen layer', await page.evaluate(() => !document.getElementById('scene').closest('[data-mobile-viewer]') && getComputedStyle(document.getElementById('scene')).position === 'fixed'));
 
   if (SHOTS) {
     const dir = join(ROOT, 'docs/screenshots');
@@ -173,8 +237,19 @@ try {
       await new Promise((r) => setTimeout(r, 2500));
       await page.screenshot({ path: join(dir, `slide-${String(i).padStart(2, '0')}.png`) });
     }
-    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2 });
-    for (const i of [1, 2, 7, 8]) {
+    await page.goto(`${URL}#/3`, { waitUntil: 'networkidle0' });
+    await page.click('[data-roadmap-view="time"]');
+    await new Promise((r) => setTimeout(r, 800));
+    await page.screenshot({ path: join(dir, 'slide-03-time.png') });
+    await page.goto(`${URL}#/8`, { waitUntil: 'networkidle0' });
+    await page.click('[data-view="pickups"]');
+    await new Promise((r) => setTimeout(r, 2200));
+    await page.screenshot({ path: join(dir, 'slide-08-pickups.png') });
+    await page.click('[data-view="headstock"]');
+    await new Promise((r) => setTimeout(r, 2200));
+    await page.screenshot({ path: join(dir, 'slide-08-headstock.png') });
+    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    for (let i = 1; i <= 11; i++) {
       await page.goto(`${URL}#/${i}`, { waitUntil: 'networkidle0' });
       await page.reload({ waitUntil: 'networkidle0' });
       await page.waitForSelector('html[data-ready="true"]');

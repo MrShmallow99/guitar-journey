@@ -21,6 +21,18 @@ body[data-scene-mode="interactive"] .scene { pointer-events: auto; cursor: grab;
 body[data-scene-mode="interactive"] .scene:active { cursor: grabbing; }
 body.no-webgl .scene { display: none; }
 
+/* Inline viewer (small screens): the canvas lives inside the slide, in flow */
+.mobile-viewer { display: none; }
+.scene.scene--inline {
+  position: static;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  filter: none;
+  border-radius: inherit;
+}
+.mobile-viewer--interactive .scene--inline { pointer-events: auto; touch-action: none; }
+
 /* ---------- top bar ---------- */
 .topbar {
   position: fixed;
@@ -219,7 +231,7 @@ body.no-webgl .scene { display: none; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 900px), (max-height: 560px) {
-  :root { --topbar-h: 3rem; --navbar-h: 3.5rem; }
+  :root { --topbar-h: 3rem; --navbar-h: 4rem; }
   .topbar__act { display: none; }
   .topbar__brand { flex: 1; }
 
@@ -233,10 +245,28 @@ body.no-webgl .scene { display: none; }
   .slide--stage .slide__inner { grid-template-columns: minmax(0, 1fr); max-height: none; }
   .slide__aside--stage { display: none; }
 
-  /* On small screens the 3D layer always sits behind the text, dimmed,
-     except on the dedicated guitar slide, where a transparent window at
-     the top of the slide lets the guitar be dragged. */
-  body[data-scene-mode="side"] .scene { opacity: 0.22; }
-  .slide--stage .slide__aside--stage { display: block; order: -1; min-height: 42vh; }
+  /* Small screens: the guitar never sits behind text. It renders only inside
+     the in-flow viewer boxes on slides 1 and 8 (see main.js sync()). */
+  .mobile-viewer {
+    display: block;
+    height: clamp(220px, 38vh, 340px);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: radial-gradient(circle at 50% 45%, rgb(227 164 59 / 0.12), transparent 70%), var(--bg-raised);
+    overflow: hidden;
+  }
+  .mobile-viewer--interactive { height: clamp(260px, 46vh, 420px); }
   .model-credit { position: static; text-align: start; margin-top: var(--space-5); }
+
+  /* chrome: opaque bars so they never show content through them;
+     dots hidden (the counter shows position), larger touch targets */
+  .topbar { background: var(--bg); border-bottom: 1px solid var(--line); }
+  .navbar {
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    justify-content: space-between;
+  }
+  .navbar__dots { display: none; }
+  .navbar__btn { width: 3rem; height: 3rem; }
+  .slide { padding-bottom: calc(var(--navbar-h) + var(--space-6)); }
 }

@@ -94,6 +94,17 @@ export function initFretboard(data) {
 
   function currentKey() { return data.scales[state.scale].keys[state.key]; }
 
+  // On small screens the diagram scrolls horizontally: bring the selected
+  // position into view instead of leaving it off-screen.
+  function revealPosition(key, pos) {
+    const figure = svg.closest('.fretboard__figure');
+    if (figure.scrollWidth <= figure.clientWidth + 1) return;
+    const scale = svg.getBoundingClientRect().width / 1000;
+    const startFret = pos === null ? 0 : key.positions[pos - 1].span[0];
+    const left = startFret <= 1 ? 0 : fretX(startFret - 1) * scale - 24;
+    figure.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+  }
+
   function fillKeys() {
     keySel.replaceChildren(...Object.keys(data.scales[state.scale].keys).map((k) => new Option(k, k)));
     keySel.value = state.key;
@@ -155,6 +166,7 @@ export function initFretboard(data) {
     }
     const scaleName = SCALE_LABELS[state.scale];
     const where = pos === null ? `כל הצוואר (סריגים ${ltr('0–15')})` : `תנוחה ${pos}, סריגים ${ltr(key.positions[pos - 1].span.join('–'))}`;
+    revealPosition(key, pos);
     summary.textContent = `${ltr(state.key)} ${scaleName} · ${where} · ${shown} תווים · תווי הסולם: ${ltr(key.notes.map((n) => n.name).join(' '))}`;
   }
 }

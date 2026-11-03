@@ -71,3 +71,43 @@ export const STAGES = [
     sign: 'אחרים מזהים את הנגינה שלכם.',
   },
 ];
+
+// Slide 3 "over time" view. Every time reference is an illustrative example
+// for one learner practising regularly and with focus, not a forecast.
+export const PHASES = [
+  {
+    when: 'החודשים הראשונים',
+    range: 'חודשים 0–3',
+    focus: ['יציבה רפויה ולחץ מינימלי', 'אקורדים פתוחים ומעברים ביניהם', 'פריטה עם מטרונום'],
+    milestone: 'מלווים שיר פשוט שלם, בלי לעצור.',
+  },
+  {
+    when: 'השנה הראשונה',
+    range: 'עד סוף שנה 1',
+    focus: ['אקורדי בר ופאוור-קורדס', 'פנטטוניקה בתנוחה אחת, בנדים ראשונים', 'כמה שירים שלמים ברפרטואר'],
+    milestone: 'מנגנים ריף או סולו קצר ומוכר, נקי ובקצב.',
+  },
+  {
+    when: 'השנים הבאות',
+    range: 'שנים 1–3',
+    focus: ['חיבור תנוחות על כל הצוואר', 'אלתור מעל מהלכי אקורדים', 'הוצאת שירים מהשמיעה, סאונד ודינמיקה'],
+    milestone: 'מאלתרים מעל ג׳אם בלוז ונשמעים מוזיקליים.',
+  },
+  {
+    when: 'לאורך שנים',
+    range: '3 שנים ומעלה',
+    focus: ['הרמוניה ותווי אקורד', 'כתיבה, עיבוד והקלטה', 'סגנון אישי'],
+    milestone: 'נגינה מזוהה — שומעים שזה אתם.',
+  },
+];
+
+// Illustrative growth curves (0..1) at the phase boundaries, for the same
+// example learner. Shapes, not data: technique jumps early, theory and the
+// ear tend to mature later. Colours were validated for the dark surface
+// (dataviz palette check: lightness band, chroma, CVD and contrast).
+export const CURVES = [
+  { skill: 'קצב', color: '#139a8f', values: [0.04, 0.24, 0.5, 0.74, 0.88] },
+  { skill: 'טכניקה', color: '#c4861a', values: [0.05, 0.33, 0.55, 0.68, 0.74] },
+  { skill: 'הצוואר ותאוריה', color: '#d4583f', values: [0.02, 0.08, 0.26, 0.46, 0.6] },
+  { skill: 'שמיעה ואלתור', color: '#9474e0', values: [0.02, 0.06, 0.18, 0.34, 0.48] },
+];

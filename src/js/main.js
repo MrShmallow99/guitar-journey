@@ -1,10 +1,12 @@
 import { Deck } from './core/deck.js';
 import { initRadar } from './components/radar.js';
 import { initRoadmap } from './components/roadmap.js';
+import { initTimeline } from './components/timeline.js';
 import { initNextSteps } from './components/next-steps.js';
 import { initFretboard, initFretboardError } from './components/fretboard.js';
 
 const DATA_URL = 'src/data/fretboard.json';
+const narrow = matchMedia('(max-width: 900px), (max-height: 560px)');
 
 async function loadGuitarData() {
   const res = await fetch(DATA_URL, { cache: 'no-cache' });
@@ -42,14 +44,21 @@ async function initStage(deck, data) {
       stage.setAutoRotate(on);
     });
 
-    const sync = ({ slide }) => {
-      stage.setSlide(slide.dataset.scene, slide.dataset.sceneMode);
-      if (slide.dataset.sceneMode === 'interactive') {
+    // Small screens: the guitar only appears inside a slide's in-flow viewer
+    // box (slides 1 and 8), never behind text. Large screens: fullscreen layer.
+    const sync = ({ slide }, { entering = true } = {}) => {
+      const mode = slide.dataset.sceneMode ?? 'off';
+      const host = narrow.matches ? slide.querySelector('[data-mobile-viewer]') : null;
+      const effective = narrow.matches && !host ? 'off' : mode;
+      document.body.dataset.sceneMode = effective;
+      stage.setSlide(slide.dataset.scene, effective, host);
+      if (entering && mode === 'interactive') {
         pressView(slide.dataset.scene);
         autoBtn.setAttribute('aria-pressed', 'false');
       }
     };
     deck.addEventListener('change', (e) => sync(e.detail));
+    narrow.addEventListener('change', () => sync({ slide: deck.current }, { entering: false }));
     sync({ slide: deck.current });
     window.__stage = stage; // exposed for debugging and the browser smoke test
   } catch (err) {
@@ -59,11 +68,11 @@ async function initStage(deck, data) {
 
 async function main() {
   const deck = new Deck(document.getElementById('deck'));
-  deck.addEventListener('change', ({ detail }) => {
-    document.body.dataset.sceneMode = detail.slide.dataset.sceneMode ?? 'off';
-  });
+  // until the 3D stage loads (or if it can't), the canvas layer stays hidden
+  document.body.dataset.sceneMode = 'off';
   initRadar();
   initRoadmap();
+  initTimeline();
   initNextSteps(deck);
   deck.start();
 

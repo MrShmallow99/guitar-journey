@@ -63,7 +63,7 @@ export function initRoadmap() {
     for (const lane of lanes) {
       const v = ratings.values[lane.skill.id];
       // Center of the marker sits at the rating's position; keep it inside the track.
-      const pct = Math.min(96, Math.max(4, toPercent(v)));
+      const pct = Math.min(94, Math.max(6, toPercent(v)));
       lane.marker.style.insetInlineStart = `${pct}%`;
       lane.marker.textContent = v;
       lane.marker.title = `${lane.skill.name}: ${v} מתוך 5 · שלב ${STAGES[stageOf(v)].name}`;
